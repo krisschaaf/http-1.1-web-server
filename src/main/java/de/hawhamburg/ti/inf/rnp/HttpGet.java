@@ -29,32 +29,26 @@ public class HttpGet {
             wtr.flush();
 
             BufferedReader bufRead = new BufferedReader(new InputStreamReader(s.getInputStream()));
-            passData(bufRead);
+            getBytesFromReader(bufRead);
 
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
     }
 
-    private void passData(BufferedReader bufRead) throws IOException {
-        String outStr;
+    private void getBytesFromReader(BufferedReader bufRead) throws IOException {
         int byteValue;
+        int passedDataInBytes = 0;
+        List<Byte> bytesToStream = new ArrayList<>();
 
         if(webServer.getContentRangeStart() == -1) {
             //The whole Data will be passed
-            List<Byte> bytesToStream = new ArrayList<>();
-
             while((byteValue = bufRead.read()) != -1) {
                 byte streamedByte = (byte) byteValue;
                     bytesToStream.add(streamedByte);
             }
-
-            convertListToByteArray(bytesToStream);
         } else if (webServer.getContentRangeStart() != -1 && webServer.getContentRangeEnd() == -1) {
             // Data from given Content-Range start will be passed
-            int passedDataInBytes = 0;
-            List<Byte> bytesToStream = new ArrayList<>();
-
             while((byteValue = bufRead.read()) != -1) {
                 byte streamedByte = (byte) byteValue;
                 passedDataInBytes ++;
@@ -62,13 +56,8 @@ public class HttpGet {
                     bytesToStream.add(streamedByte);
                 }
             }
-
-            convertListToByteArray(bytesToStream);
         } else if (webServer.getContentRangeStart() != -1 && webServer.getContentRangeEnd() != -1) {
             // Data in between given Content-Range start and Content-Range end will be passed
-            int passedDataInBytes = 0;
-            List<Byte> bytesToStream = new ArrayList<>();
-
             while((byteValue = bufRead.read()) != -1) {
                 byte streamedByte = (byte) byteValue;
                 passedDataInBytes ++;
@@ -79,12 +68,12 @@ public class HttpGet {
                     break;
                 }
             }
-
-            convertListToByteArray(bytesToStream);
         } else {
             System.err.println("No valid Content-Range.");
             System.exit(-1);
         }
+
+        convertListToByteArray(bytesToStream);
     }
 
     private void convertListToByteArray(List<Byte> bytesToStream) {
@@ -97,31 +86,35 @@ public class HttpGet {
 
     private void send(byte[] bytes) {
         if(webServer.getSlowMoBytes() != -1 && webServer.getSlowMoTime() != -1) {
-            try {
-                for (int i = 0; i < bytes.length; i += webServer.getSlowMoBytes()) {
-                    int endIndex = Math.min(i + webServer.getSlowMoBytes(), bytes.length);
-                    byte[] slice = Arrays.copyOfRange(bytes, i, endIndex);
-
-                    String sliceText = new String(slice, StandardCharsets.UTF_8);
-
-                    Thread thread = new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                Thread.sleep(webServer.getSlowMoTime());
-                                System.out.println(sliceText);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
-                    thread.start();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            sendInSlowMo(bytes);
         } else {
             System.out.println(new String(bytes, StandardCharsets.UTF_8));
+        }
+    }
+
+    private void sendInSlowMo(byte[] bytes) {
+        try {
+            for (int i = 0; i < bytes.length; i += webServer.getSlowMoBytes()) {
+                int endIndex = Math.min(i + webServer.getSlowMoBytes(), bytes.length);
+                byte[] slice = Arrays.copyOfRange(bytes, i, endIndex);
+
+                String sliceText = new String(slice, StandardCharsets.UTF_8);
+
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Thread.sleep(webServer.getSlowMoTime());
+                            System.out.println(sliceText);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                thread.start();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
