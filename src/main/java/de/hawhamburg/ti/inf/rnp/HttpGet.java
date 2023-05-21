@@ -1,5 +1,7 @@
 package de.hawhamburg.ti.inf.rnp;
 
+import picocli.CommandLine;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -30,28 +32,37 @@ public class HttpGet {
     }
 
     public static void main(String[] args) {
-        String host = "";
-        int port = 80;
-        String file = "";
 
-        if(args.length<3){
-            printUsage();
-            System.exit(-1);
-        } else if(args.length<4) {
-            host = args[0];
-            port = Integer.parseInt(args[1]);
-            if(port<=0 || port > 65535) {
-                System.err.println("Port must be between 1 and 65535");
-                System.exit(-1);
-            }
-            file = args[2];
-            if(file.isEmpty()) {
-                System.err.println("Path cannot be empty");
-                System.exit(-1);
-            }
+        System.out.println("Argument count: " + args.length);
+
+        for (int i = 0; i < args.length; i++) {
+            System.out.println("Argument " + i + ": " + args[i]);
         }
-        System.out.println("Getting " + file + " from " + host + ":" + port);
-        HttpGet hg = new HttpGet(host, port, file);
+
+        ArgumentDecryptor argumentDecryptor = new ArgumentDecryptor();
+
+        try {
+            CommandLine.ParseResult parseResult = new CommandLine(argumentDecryptor).parseArgs(args);
+            if (!CommandLine.printHelpIfRequested(parseResult)) {
+
+                if(argumentDecryptor.getPort()<=0 || argumentDecryptor.getPort() > 65535) {
+                    System.err.println("Port must be between 1 and 65535");
+                    System.exit(-1);
+                }
+                if(argumentDecryptor.getFile().isEmpty()) {
+                    System.err.println("Path cannot be empty");
+                    System.exit(-1);
+                }
+
+                System.out.println("Getting " + argumentDecryptor.getFile() + " from " + argumentDecryptor.getHost() + ":" + argumentDecryptor.getPort());
+
+                HttpGet hg = new HttpGet(argumentDecryptor.getHost(), argumentDecryptor.getPort(), argumentDecryptor.getFile());
+            }
+        } catch (CommandLine.ParameterException ex) {
+            printUsage();
+            System.err.println(ex.getMessage());
+            ex.getCommandLine().usage(System.err);
+        }
     }
 
     private static void printUsage() {
