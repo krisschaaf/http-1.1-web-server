@@ -4,7 +4,7 @@ import picocli.CommandLine;
 
 import static picocli.CommandLine.*;
 
-@Command(name = "WebServer", mixinStandardHelpOptions = true, version = "v3.0.0")
+@Command(name = "WebServer", mixinStandardHelpOptions = true)
 public class WebServer implements Runnable{
 
     @Option(names = { "-h", "--host" }, description = "Host")
@@ -35,6 +35,7 @@ public class WebServer implements Runnable{
         System.out.println("Getting " + this.getFile() + " from " + this.getHost() + ":" + this.getPort());
 
         HttpGet hg = new HttpGet(this);
+        hg.get();
     }
 
     public static void main(String[] args) {
