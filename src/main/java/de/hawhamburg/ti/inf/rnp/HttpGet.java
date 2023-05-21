@@ -88,7 +88,7 @@ public class HttpGet {
         if(webServer.getSlowMoBytes() != -1 && webServer.getSlowMoTime() != -1) {
             sendInSlowMo(bytes);
         } else {
-            System.out.println(new String(bytes, StandardCharsets.UTF_8));
+            saveText(new String(bytes, StandardCharsets.UTF_8));
         }
     }
 
@@ -105,7 +105,7 @@ public class HttpGet {
                     public void run() {
                         try {
                             Thread.sleep(webServer.getSlowMoTime());
-                            System.out.println(sliceText);
+                            saveText(sliceText);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -116,5 +116,9 @@ public class HttpGet {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void saveText(String text) {
+        System.out.println(text);
     }
 }
