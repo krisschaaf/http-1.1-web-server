@@ -1,10 +1,11 @@
 package de.hawhamburg.ti.inf.rnp;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class HttpGet {
     private WebServer webServer;
@@ -28,53 +29,99 @@ public class HttpGet {
             wtr.flush();
 
             BufferedReader bufRead = new BufferedReader(new InputStreamReader(s.getInputStream()));
-            String outStr;
+            passData(bufRead);
 
-            if(webServer.getContentRangeStart() == -1) {
-                //The whole Data will be passed
-                while((outStr = bufRead.readLine()) != null) {
-                    send(outStr);
-                }
-            } else if (webServer.getContentRangeStart() != -1 && webServer.getContentRangeEnd() == -1) {
-                // Data from given Content-Range start will be passed
-                int passedDataInBytes = 0;
-
-                while((outStr = bufRead.readLine()) != null) { //TODO read by byte and not by line
-                    passedDataInBytes += outStr.getBytes().length;
-                    if(passedDataInBytes > webServer.getContentRangeStart()) {
-                        send(outStr);
-                    }
-                }
-            } else if (webServer.getContentRangeStart() != -1 && webServer.getContentRangeEnd() != -1) {
-                // Data in between given Content-Range start and Content-Range end will be passed
-                int passedDataInBytes = 0;
-
-                while((outStr = bufRead.readLine()) != null) { //TODO read by byte and not by line
-                    passedDataInBytes += outStr.getBytes().length;
-                    if(passedDataInBytes > webServer.getContentRangeStart()) {
-                        send(outStr);
-                    }
-                    if(passedDataInBytes > webServer.getContentRangeEnd()) {
-                        break;
-                    }
-                }
-            } else {
-                System.err.println("No valid Content-Range.");
-                System.exit(-1);
-            }
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
     }
 
-    private void send(String content) {
+    private void passData(BufferedReader bufRead) throws IOException {
+        String outStr;
+        int byteValue;
+
+        if(webServer.getContentRangeStart() == -1) {
+            //The whole Data will be passed
+            List<Byte> bytesToStream = new ArrayList<>();
+
+            while((byteValue = bufRead.read()) != -1) {
+                byte streamedByte = (byte) byteValue;
+                    bytesToStream.add(streamedByte);
+            }
+
+            convertListToByteArray(bytesToStream);
+        } else if (webServer.getContentRangeStart() != -1 && webServer.getContentRangeEnd() == -1) {
+            // Data from given Content-Range start will be passed
+            int passedDataInBytes = 0;
+            List<Byte> bytesToStream = new ArrayList<>();
+
+            while((byteValue = bufRead.read()) != -1) {
+                byte streamedByte = (byte) byteValue;
+                passedDataInBytes ++;
+                if(passedDataInBytes > webServer.getContentRangeStart()) {
+                    bytesToStream.add(streamedByte);
+                }
+            }
+
+            convertListToByteArray(bytesToStream);
+        } else if (webServer.getContentRangeStart() != -1 && webServer.getContentRangeEnd() != -1) {
+            // Data in between given Content-Range start and Content-Range end will be passed
+            int passedDataInBytes = 0;
+            List<Byte> bytesToStream = new ArrayList<>();
+
+            while((byteValue = bufRead.read()) != -1) {
+                byte streamedByte = (byte) byteValue;
+                passedDataInBytes ++;
+                if(passedDataInBytes > webServer.getContentRangeStart()) {
+                    bytesToStream.add(streamedByte);
+                }
+                if(passedDataInBytes > webServer.getContentRangeEnd()) {
+                    break;
+                }
+            }
+
+            convertListToByteArray(bytesToStream);
+        } else {
+            System.err.println("No valid Content-Range.");
+            System.exit(-1);
+        }
+    }
+
+    private void convertListToByteArray(List<Byte> bytesToStream) {
+        byte[] byteArray = new byte[bytesToStream.size()];
+        for (int i = 0; i < bytesToStream.size(); i++) {
+            byteArray[i] = bytesToStream.get(i);
+        }
+        send(byteArray);
+    }
+
+    private void send(byte[] bytes) {
         if(webServer.getSlowMoBytes() != -1 && webServer.getSlowMoTime() != -1) {
-            //TODO: start new Thread in SlowMoTime that prints 4 Bytes of content
-            for(int bytesSent = 0; bytesSent <= content.getBytes().length; bytesSent+= webServer.getSlowMoBytes()) {
-                System.out.println();
+            try {
+                for (int i = 0; i < bytes.length; i += webServer.getSlowMoBytes()) {
+                    int endIndex = Math.min(i + webServer.getSlowMoBytes(), bytes.length);
+                    byte[] slice = Arrays.copyOfRange(bytes, i, endIndex);
+
+                    String sliceText = new String(slice, StandardCharsets.UTF_8);
+
+                    Thread thread = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                Thread.sleep(webServer.getSlowMoTime());
+                                System.out.println(sliceText);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                    thread.start();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         } else {
-            System.out.println(content);
+            System.out.println(new String(bytes, StandardCharsets.UTF_8));
         }
     }
 }
