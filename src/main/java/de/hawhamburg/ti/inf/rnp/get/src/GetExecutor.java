@@ -1,4 +1,4 @@
-package de.hawhamburg.ti.inf.rnp.get;
+package de.hawhamburg.ti.inf.rnp.get.src;
 
 import java.io.*;
 import java.net.Socket;

@@ -1,10 +1,13 @@
-package de.hawhamburg.ti.inf.rnp.webServer;
-import de.hawhamburg.ti.inf.rnp.utils.WebServerUtils;
+package de.hawhamburg.ti.inf.rnp.webServer.src;
+
+import de.hawhamburg.ti.inf.rnp.webServer.src.utils.WebServerUtils;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Responder implements Runnable {
     private Socket remote;
@@ -16,15 +19,17 @@ public class Responder implements Runnable {
     @Override
     public void run() {
         try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(
+            BufferedReader bufRead = new BufferedReader(new InputStreamReader(
                     remote.getInputStream()));
 
             PrintWriter out = new PrintWriter(remote.getOutputStream());
 
-            String request = ".";
+            String requestLine = "";
+            List<String> request = new ArrayList<>();
 
-            while (!request.equals(""))
-                request = in.readLine();
+            while((requestLine = bufRead.readLine()) != null) {
+                    request.add(requestLine);
+            }
 
             if (!validateRequest(request)) {
                 respondWithBadRequest(out);
@@ -32,7 +37,7 @@ public class Responder implements Runnable {
 
             System.out.println("Connection, sending data.");
 
-            if(request.contains("/index.html")) {
+            if(requestLine.contains("/index.html")) {
                 this.sendIndexHtmlResponse(out);
             } else {
                 this.sendDefaultResponse(out);
@@ -61,8 +66,8 @@ public class Responder implements Runnable {
         out.flush();
     }
 
-    private boolean validateRequest(String request) {
-        return request.matches(WebServerUtils.REQUEST_REGEX);
+    private boolean validateRequest(List<String> request) {
+        return request.get(0).matches(WebServerUtils.REQUEST_REGEX);
     }
 
     private void respondWithBadRequest(PrintWriter out) {

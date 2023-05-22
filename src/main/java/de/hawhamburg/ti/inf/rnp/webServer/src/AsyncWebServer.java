@@ -1,15 +1,16 @@
-package de.hawhamburg.ti.inf.rnp.webServer;
+package de.hawhamburg.ti.inf.rnp.webServer.src;
+
+import picocli.CommandLine;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+@CommandLine.Command(name = "GetClient", mixinStandardHelpOptions = true)
 public class AsyncWebServer implements Runnable {
-    private int port;
 
-    public AsyncWebServer(int port) {
-        this.port = port;
-    }
+    @CommandLine.Option(names = { "-p", "--port" }, description = "Port")
+    private int port = 80;
 
     @Override
     public void run() {
@@ -20,7 +21,7 @@ public class AsyncWebServer implements Runnable {
         }
     }
 
-    private void start() throws IOException {
+    public void start() throws IOException {
         ServerSocket s;
 
         System.out.println("Webserver starting up on port 80");
