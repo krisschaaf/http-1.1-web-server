@@ -66,7 +66,6 @@ public class Responder implements Runnable {
     }
 
     private void respondWithBadRequest(PrintWriter out) {
-        //TODO: implement me
         out.println("HTTP/1.1 404 BAD REQUEST");
         out.println("Content-Type: text/html");
         out.println("Server: RNP WebServer");
