@@ -5,14 +5,15 @@ A basic RFC based webserver implemented in java.
 
 This application uses a WebServer and a GetClient. They both must be started separately.  
 The WebServer uses concurrency and can handle multiple requests at a time.  
-I just needs to be started once. 
+I just needs to be started once, then it keeps running.  
+The WebClient will only be executed once per call.
 
-The GetClient needs following commands on startup:
+### Arguments for WebServer:
+> **-p or --port**      → Port (default: 80)
 
 ### Arguments for GetClient:
-
 > **-h or --host**      → Host (e.g. example.com)  
-> **-p or --port**      → Port (e.g. 80)  
+> **-p or --port**      → Port (default: 80)  
 > **-f or --file**      → File (e.g. /index.html)  
 > **-r or --range**     → Content-Range ***(Optional)***   
 > **-s or --slow**      → Slow Motion ***(Optional)***  
