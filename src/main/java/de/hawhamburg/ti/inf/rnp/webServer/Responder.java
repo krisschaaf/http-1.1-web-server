@@ -1,4 +1,5 @@
 package de.hawhamburg.ti.inf.rnp.webServer;
+import de.hawhamburg.ti.inf.rnp.utils.WebServerUtils;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -25,16 +26,34 @@ public class Responder implements Runnable {
             while (!str.equals(""))
                 str = in.readLine();
 
-            out.println("HTTP/1.0 200 OK");
-            out.println("Content-Type: text/html");
-            out.println("Server: RNP WebServer");
-            out.println(WebServerUtils.CONTENT_HEADER);
-            out.println(WebServerUtils.CONTENT_PARAGRAPH);
-            out.flush();
+            System.out.println("Connection, sending data.");
+
+            if(str.contains("/index.html")) {
+                this.sendIndexHtmlResponse(out);
+            } else {
+                this.sendDefaultResponse(out);
+            }
 
             remote.close();
         } catch (Exception e) {
             System.out.println("Error: " + e);
         }
+    }
+
+    private void sendDefaultResponse(PrintWriter out) {
+        out.println("HTTP/1.0 200 OK");
+        out.println("Content-Type: text/html");
+        out.println("Server: RNP WebServer");
+        out.println(WebServerUtils.CONTENT_HEADER);
+        out.println(WebServerUtils.CONTENT_PARAGRAPH);
+        out.flush();
+    }
+
+    private void sendIndexHtmlResponse(PrintWriter out) {
+        out.println("HTTP/1.0 200 OK");
+        out.println("Content-Type: text/html");
+        out.println("Server: RNP WebServer");
+        out.println(WebServerUtils.INDEX_HTML);
+        out.flush();
     }
 }

@@ -1,9 +1,6 @@
 package de.hawhamburg.ti.inf.rnp.webServer;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -42,8 +39,6 @@ public class AsyncWebServer implements Runnable {
 
             Responder responder = new Responder(remote);
             responder.run();
-
-            System.out.println("Connection, sending data.");
         }
     }
 }
