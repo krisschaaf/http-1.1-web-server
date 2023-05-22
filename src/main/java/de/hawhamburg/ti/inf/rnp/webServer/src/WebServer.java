@@ -22,13 +22,13 @@ public class WebServer implements Runnable {
     }
 
     public void start() throws IOException {
-        ServerSocket s;
+        ServerSocket socket;
 
         System.out.printf("Webserver starting up on port %d\r\n", port);
         System.out.println("(press ctrl-c to exit)");
 
         try {
-            s = new ServerSocket(this.port);
+            socket = new ServerSocket(this.port);
         } catch (Exception e) {
             System.out.println("Error: " + e);
             return;
@@ -36,7 +36,7 @@ public class WebServer implements Runnable {
 
         while (true) {
             System.out.println("Waiting for connection");
-            Socket remote = s.accept();
+            Socket remote = socket.accept();
 
             Thread thread = new Thread(new Responder(remote));
             thread.start();

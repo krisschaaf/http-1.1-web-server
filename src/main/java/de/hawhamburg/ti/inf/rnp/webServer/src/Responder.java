@@ -1,8 +1,9 @@
 package de.hawhamburg.ti.inf.rnp.webServer.src;
 
-import de.hawhamburg.ti.inf.rnp.webServer.src.utils.WebServerUtils;
+import de.hawhamburg.ti.inf.rnp.webServer.src.utils.ResponderUtils;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -11,39 +12,36 @@ import java.util.List;
 
 public class Responder implements Runnable {
     private Socket remote;
+    private ResponseBuilder responseBuilder;
 
-    public Responder(Socket socket) {
+    public Responder(Socket socket) throws IOException {
         this.remote = socket;
+        this.responseBuilder = new ResponseBuilder(new PrintWriter(remote.getOutputStream()));
     }
 
     @Override
     public void run() {
         try {
-            BufferedReader bufRead = new BufferedReader(new InputStreamReader(remote.getInputStream()));
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(remote.getInputStream()));
 
-            PrintWriter out = new PrintWriter(remote.getOutputStream());
-
-            String requestLine = "";
             List<String> request = new ArrayList<>();
+            String requestLine = bufferedReader.readLine();;
 
-            while(!bufRead.ready()) {
-                Thread.sleep(500);
-            }
-
-            while((requestLine = bufRead.readLine()) != null) {
-                    request.add(requestLine);
+            while(!requestLine.isEmpty()) {
+                request.add(requestLine);
+                requestLine = bufferedReader.readLine();
             }
 
             if (!validateRequest(request)) {
-                respondWithBadRequest(out);
+                this.responseBuilder.respondWithBadRequest();
             }
 
             System.out.println("Connection, sending data.");
 
             if(request.get(0).contains("/index.html")) {
-                this.sendIndexHtmlResponse(out);
+                this.responseBuilder.sendIndexHtmlResponse();
             } else {
-                this.sendDefaultResponse(out);
+                this.responseBuilder.sendDefaultResponse();
             }
 
             remote.close();
@@ -52,32 +50,19 @@ public class Responder implements Runnable {
         }
     }
 
-    private void sendDefaultResponse(PrintWriter out) {
-        out.println("HTTP/1.1 200 OK");
-        out.println("Content-Type: text/html");
-        out.println("Server: RNP WebServer");
-        out.println(WebServerUtils.CONTENT_HEADER);
-        out.println(WebServerUtils.CONTENT_PARAGRAPH);
-        out.flush();
-    }
-
-    private void sendIndexHtmlResponse(PrintWriter out) {
-        out.println("HTTP/1.1 200 OK");
-        out.println("Content-Type: text/html");
-        out.println("Server: RNP WebServer");
-        out.println(WebServerUtils.INDEX_HTML);
-        out.flush();
-    }
-
     private boolean validateRequest(List<String> request) {
-        return request.get(0).matches(WebServerUtils.REQUEST_REGEX);
-    }
-
-    private void respondWithBadRequest(PrintWriter out) {
-        out.println("HTTP/1.1 404 BAD REQUEST");
-        out.println("Content-Type: text/html");
-        out.println("Server: RNP WebServer");
-        out.println("Invalid Request.");
-        out.flush();
+        if(!request.get(0).matches(ResponderUtils.REQUEST_REGEX)) {
+            return false;
+        }
+        for (int i = 1; i < request.size(); i++) {
+            if (!request.get(i).matches(ResponderUtils.REQUEST_HEADER_REGEX)) {
+                return false;
+            } else {
+                if(request.get(i).length() > 100) {
+                    this.responseBuilder.respondWithRequestHeaderFieldsTooLarge();
+                }
+            }
+        }
+        return true;
     }
 }

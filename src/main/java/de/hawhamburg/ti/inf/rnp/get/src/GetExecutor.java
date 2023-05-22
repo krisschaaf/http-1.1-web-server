@@ -25,7 +25,7 @@ public class GetExecutor {
             StringBuilder request = new StringBuilder();
             request.append("GET " + file +  " HTTP/1.1\r\n");
             request.append("Host: " + remoteHost + "\r\n");
-            request.append("Connection: close\r\n\r\n");
+            request.append("Connection: close\r\n\r");
 
             PrintWriter wtr = new PrintWriter(socket.getOutputStream());
 
@@ -46,16 +46,9 @@ public class GetExecutor {
             }
 
             wtr.flush();
-
             BufferedReader bufRead = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
             getBytesFromReader(bufRead);
-
-//            String outStr;
-//
-//            while((outStr = bufRead.readLine()) != null) {
-//                System.out.println(outStr);
-//            }
         } catch (IOException e) {
             System.err.println(e.getMessage());
         } catch (InterruptedException e) {
