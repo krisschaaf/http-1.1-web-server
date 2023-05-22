@@ -21,14 +21,18 @@ public class Responder implements Runnable {
 
             PrintWriter out = new PrintWriter(remote.getOutputStream());
 
-            String str = ".";
+            String request = ".";
 
-            while (!str.equals(""))
-                str = in.readLine();
+            while (!request.equals(""))
+                request = in.readLine();
+
+            if (!validateRequest(request)) {
+                respondWithBadRequest(out);
+            }
 
             System.out.println("Connection, sending data.");
 
-            if(str.contains("/index.html")) {
+            if(request.contains("/index.html")) {
                 this.sendIndexHtmlResponse(out);
             } else {
                 this.sendDefaultResponse(out);
@@ -41,7 +45,7 @@ public class Responder implements Runnable {
     }
 
     private void sendDefaultResponse(PrintWriter out) {
-        out.println("HTTP/1.0 200 OK");
+        out.println("HTTP/1.1 200 OK");
         out.println("Content-Type: text/html");
         out.println("Server: RNP WebServer");
         out.println(WebServerUtils.CONTENT_HEADER);
@@ -50,10 +54,23 @@ public class Responder implements Runnable {
     }
 
     private void sendIndexHtmlResponse(PrintWriter out) {
-        out.println("HTTP/1.0 200 OK");
+        out.println("HTTP/1.1 200 OK");
         out.println("Content-Type: text/html");
         out.println("Server: RNP WebServer");
         out.println(WebServerUtils.INDEX_HTML);
+        out.flush();
+    }
+
+    private boolean validateRequest(String request) {
+        return request.matches(WebServerUtils.REQUEST_REGEX);
+    }
+
+    private void respondWithBadRequest(PrintWriter out) {
+        //TODO: implement me
+        out.println("HTTP/1.1 404 BAD REQUEST");
+        out.println("Content-Type: text/html");
+        out.println("Server: RNP WebServer");
+        out.println("Invalid Request.");
         out.flush();
     }
 }

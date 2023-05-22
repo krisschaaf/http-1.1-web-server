@@ -1,7 +1,9 @@
 package de.hawhamburg.ti.inf.rnp.utils;
 
-public class WebServerUtils {
-    public static final String CONTENT_HEADER = "<h1>Welcome to the Computer Networking Mini-WebServer</h2>";
+public final class WebServerUtils {
+
+    public static final String REQUEST_REGEX = "^(GET|POST|PUT|DELETE|HEAD|OPTIONS|PATCH)[ ]+(\\/[\\w]+\\.[\\w]+[ ])?HTTP\\/1.1((\\r\\n)([\\w]\\:[\\w]))*(\\r\\n)*.*$";
+    public static final String CONTENT_HEADER = "<h1>Welcome to the Computer Networking WebServer</h2>";
     public static final String CONTENT_PARAGRAPH =
             "<p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, " +
                     "sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. " +
