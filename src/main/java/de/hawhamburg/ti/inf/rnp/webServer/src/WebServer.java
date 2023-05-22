@@ -1,15 +1,15 @@
 package de.hawhamburg.ti.inf.rnp.webServer.src;
 
-import picocli.CommandLine;
+import picocli.CommandLine.*;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-@CommandLine.Command(name = "GetClient", mixinStandardHelpOptions = true)
+@Command(name = "GetClient", mixinStandardHelpOptions = true)
 public class WebServer implements Runnable {
 
-    @CommandLine.Option(names = { "-p", "--port" }, description = "Port")
+    @Option(names = { "-p", "--port" }, description = "Port")
     private int port = 80;
 
     @Override
