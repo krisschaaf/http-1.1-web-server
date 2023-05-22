@@ -16,6 +16,7 @@ public class GetClient implements Runnable {
 
     @Option(names = { "-r", "--range" }, description = "Content-Range")
     private String contentRange = "-1";
+
     @Option(names = { "-s", "--slow"}, description = "Slow-Motion")
     private int[] slowMotion = {-1,-1};
 

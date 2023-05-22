@@ -20,22 +20,42 @@ public class GetExecutor {
         String file = getClient.getFile();
 
         try {
-            Socket s = new Socket(remoteHost, port);
+            Socket socket = new Socket(remoteHost, port);
 
-            BufferedReader bufRead = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            StringBuilder request = new StringBuilder();
+            request.append("GET " + file +  " HTTP/1.1\r\n");
+            request.append("Host: " + remoteHost + "\r\n");
+            request.append("Connection: close\r\n\r\n");
 
-            PrintWriter wtr = new PrintWriter(s.getOutputStream());
-            wtr.printf("GET %s HTTP/1.1\r\n", file);
-            wtr.printf("Host: %s\r\n", remoteHost);
-            wtr.printf("Connection: close");
+            PrintWriter wtr = new PrintWriter(socket.getOutputStream());
+
+            if(getClient.getSlowMoBytes() != -1 && getClient.getSlowMoTime() != -1) {
+                byte[] requestAsBytes = request.toString().getBytes();
+
+                for (int i = 0; i < requestAsBytes.length; i += getClient.getSlowMoBytes()) {
+                    int endIndex = Math.min(i + getClient.getSlowMoBytes(), requestAsBytes.length);
+                    byte[] slice = Arrays.copyOfRange(requestAsBytes, i, endIndex);
+
+                    String sliceText = new String(slice, StandardCharsets.UTF_8);
+
+                    wtr.println(sliceText);
+                    Thread.sleep(getClient.getSlowMoTime());
+                }
+            } else {
+                wtr.println(request);
+            }
+
             wtr.flush();
 
-            while(!bufRead.ready()) {
-                Thread.sleep(500);
-            }
+            BufferedReader bufRead = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
             getBytesFromReader(bufRead);
 
+//            String outStr;
+//
+//            while((outStr = bufRead.readLine()) != null) {
+//                System.out.println(outStr);
+//            }
         } catch (IOException e) {
             System.err.println(e.getMessage());
         } catch (InterruptedException e) {
@@ -80,49 +100,45 @@ public class GetExecutor {
             System.exit(-1);
         }
 
-        convertListToByteArray(bytesToStream);
+        send(convertListToByteArray(bytesToStream));
     }
 
-    private void convertListToByteArray(List<Byte> bytesToStream) {
+    private byte[] convertListToByteArray(List<Byte> bytesToStream) {
         byte[] byteArray = new byte[bytesToStream.size()];
         for (int i = 0; i < bytesToStream.size(); i++) {
             byteArray[i] = bytesToStream.get(i);
         }
-        send(byteArray);
+        return byteArray;
     }
 
     private void send(byte[] bytes) {
-        if(getClient.getSlowMoBytes() != -1 && getClient.getSlowMoTime() != -1) {
-            sendInSlowMo(bytes);
-        } else {
-            saveText(new String(bytes, StandardCharsets.UTF_8));
-        }
-    }
-
-    private void sendInSlowMo(byte[] bytes) {
-        try {
-            for (int i = 0; i < bytes.length; i += getClient.getSlowMoBytes()) {
-                int endIndex = Math.min(i + getClient.getSlowMoBytes(), bytes.length);
-                byte[] slice = Arrays.copyOfRange(bytes, i, endIndex);
-
-                String sliceText = new String(slice, StandardCharsets.UTF_8);
-
-                Thread thread = new Thread(() -> {
-                    try {
-                        Thread.sleep(getClient.getSlowMoTime());
-                        saveText(sliceText);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                });
-                thread.start();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        saveText(new String(bytes, StandardCharsets.UTF_8));
     }
 
     private void saveText(String text) {
         System.out.println(text);
     }
+
+//    private void sendInSlowMo(byte[] bytes) {
+//        try {
+//            for (int i = 0; i < bytes.length; i += getClient.getSlowMoBytes()) {
+//                int endIndex = Math.min(i + getClient.getSlowMoBytes(), bytes.length);
+//                byte[] slice = Arrays.copyOfRange(bytes, i, endIndex);
+//
+//                String sliceText = new String(slice, StandardCharsets.UTF_8);
+//
+//                Thread thread = new Thread(() -> {
+//                    try {
+//                        Thread.sleep(getClient.getSlowMoTime());
+//                        saveText(sliceText);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                });
+//                thread.start();
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 }
