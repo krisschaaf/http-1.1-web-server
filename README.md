@@ -3,9 +3,15 @@
 **Exercises:** Thomas Dreibholz  
 **Java-Adjustments:** Iwer Petersen & Kristoffer Schaaf  
   
-A basic RFC based webserver implemented in java.
+A basic RFC based webserver implemented in java.  
 
-### Arguments:
+This application uses a WebServer and a GetClient. They both must be started separately.  
+The WebServer uses concurrency and can handle multiple requests at a time.  
+I just needs to be started once. 
+
+The GetClient needs following commands on startup:
+
+### Arguments for GetClient:
 
 > **-h or --host**      → Host (e.g. example.com)  
 > **-p or --port**      → Port (e.g. 80)  

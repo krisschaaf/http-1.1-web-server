@@ -1,11 +1,9 @@
-package de.hawhamburg.ti.inf.rnp;
-
-import picocli.CommandLine;
+package de.hawhamburg.ti.inf.rnp.get;
 
 import static picocli.CommandLine.*;
 
-@Command(name = "WebServer", mixinStandardHelpOptions = true)
-public class WebServer implements Runnable{
+@Command(name = "GetClient", mixinStandardHelpOptions = true)
+public class GetClient implements Runnable {
 
     @Option(names = { "-h", "--host" }, description = "Host")
     private String host;
@@ -34,13 +32,8 @@ public class WebServer implements Runnable{
 
         System.out.println("Getting " + this.getFile() + " from " + this.getHost() + ":" + this.getPort());
 
-        HttpGet hg = new HttpGet(this);
+        GetExecutor hg = new GetExecutor(this);
         hg.get();
-    }
-
-    public static void main(String[] args) {
-        int exitCode = new CommandLine(new WebServer()).execute(args); // |7|
-        System.exit(exitCode); // |8|
     }
 
     public String getHost() {

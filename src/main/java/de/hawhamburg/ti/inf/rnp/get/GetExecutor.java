@@ -1,4 +1,4 @@
-package de.hawhamburg.ti.inf.rnp;
+package de.hawhamburg.ti.inf.rnp.get;
 
 import java.io.*;
 import java.net.Socket;
@@ -7,17 +7,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class HttpGet {
-    private WebServer webServer;
+public class GetExecutor {
+    private GetClient getClient;
 
-    HttpGet(WebServer webServer){
-        this.webServer = webServer;
+    GetExecutor(GetClient getClient){
+        this.getClient = getClient;
     }
 
     public void get() {
-        String remoteHost = webServer.getHost();
-        int port = webServer.getPort();
-        String file = webServer.getFile();
+        String remoteHost = getClient.getHost();
+        int port = getClient.getPort();
+        String file = getClient.getFile();
 
         try {
             Socket s = new Socket(remoteHost, port);
@@ -41,30 +41,30 @@ public class HttpGet {
         int passedDataInBytes = 0;
         List<Byte> bytesToStream = new ArrayList<>();
 
-        if(webServer.getContentRangeStart() == -1) {
+        if(getClient.getContentRangeStart() == -1) {
             //The whole Data will be passed
             while((byteValue = bufRead.read()) != -1) {
                 byte streamedByte = (byte) byteValue;
                     bytesToStream.add(streamedByte);
             }
-        } else if (webServer.getContentRangeStart() != -1 && webServer.getContentRangeEnd() == -1) {
+        } else if (getClient.getContentRangeStart() != -1 && getClient.getContentRangeEnd() == -1) {
             // Data from given Content-Range start will be passed
             while((byteValue = bufRead.read()) != -1) {
                 byte streamedByte = (byte) byteValue;
                 passedDataInBytes ++;
-                if(passedDataInBytes > webServer.getContentRangeStart()) {
+                if(passedDataInBytes > getClient.getContentRangeStart()) {
                     bytesToStream.add(streamedByte);
                 }
             }
-        } else if (webServer.getContentRangeStart() != -1 && webServer.getContentRangeEnd() != -1) {
+        } else if (getClient.getContentRangeStart() != -1 && getClient.getContentRangeEnd() != -1) {
             // Data in between given Content-Range start and Content-Range end will be passed
             while((byteValue = bufRead.read()) != -1) {
                 byte streamedByte = (byte) byteValue;
                 passedDataInBytes ++;
-                if(passedDataInBytes > webServer.getContentRangeStart()) {
+                if(passedDataInBytes > getClient.getContentRangeStart()) {
                     bytesToStream.add(streamedByte);
                 }
-                if(passedDataInBytes > webServer.getContentRangeEnd()) {
+                if(passedDataInBytes > getClient.getContentRangeEnd()) {
                     break;
                 }
             }
@@ -85,7 +85,7 @@ public class HttpGet {
     }
 
     private void send(byte[] bytes) {
-        if(webServer.getSlowMoBytes() != -1 && webServer.getSlowMoTime() != -1) {
+        if(getClient.getSlowMoBytes() != -1 && getClient.getSlowMoTime() != -1) {
             sendInSlowMo(bytes);
         } else {
             saveText(new String(bytes, StandardCharsets.UTF_8));
@@ -94,21 +94,18 @@ public class HttpGet {
 
     private void sendInSlowMo(byte[] bytes) {
         try {
-            for (int i = 0; i < bytes.length; i += webServer.getSlowMoBytes()) {
-                int endIndex = Math.min(i + webServer.getSlowMoBytes(), bytes.length);
+            for (int i = 0; i < bytes.length; i += getClient.getSlowMoBytes()) {
+                int endIndex = Math.min(i + getClient.getSlowMoBytes(), bytes.length);
                 byte[] slice = Arrays.copyOfRange(bytes, i, endIndex);
 
                 String sliceText = new String(slice, StandardCharsets.UTF_8);
 
-                Thread thread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            Thread.sleep(webServer.getSlowMoTime());
-                            saveText(sliceText);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+                Thread thread = new Thread(() -> {
+                    try {
+                        Thread.sleep(getClient.getSlowMoTime());
+                        saveText(sliceText);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                 });
                 thread.start();
