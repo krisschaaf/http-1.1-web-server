@@ -22,17 +22,24 @@ public class GetExecutor {
         try {
             Socket s = new Socket(remoteHost, port);
 
+            BufferedReader bufRead = new BufferedReader(new InputStreamReader(s.getInputStream()));
+
             PrintWriter wtr = new PrintWriter(s.getOutputStream());
             wtr.printf("GET %s HTTP/1.1\r\n", file);
             wtr.printf("Host: %s\r\n", remoteHost);
-            wtr.printf("Connection: close\r\n\r\n");
+            wtr.printf("Connection: close");
             wtr.flush();
 
-            BufferedReader bufRead = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            while(!bufRead.ready()) {
+                Thread.sleep(500);
+            }
+
             getBytesFromReader(bufRead);
 
         } catch (IOException e) {
             System.err.println(e.getMessage());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 

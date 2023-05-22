@@ -19,13 +19,16 @@ public class Responder implements Runnable {
     @Override
     public void run() {
         try {
-            BufferedReader bufRead = new BufferedReader(new InputStreamReader(
-                    remote.getInputStream()));
+            BufferedReader bufRead = new BufferedReader(new InputStreamReader(remote.getInputStream()));
 
             PrintWriter out = new PrintWriter(remote.getOutputStream());
 
             String requestLine = "";
             List<String> request = new ArrayList<>();
+
+            while(!bufRead.ready()) {
+                Thread.sleep(500);
+            }
 
             while((requestLine = bufRead.readLine()) != null) {
                     request.add(requestLine);
@@ -37,7 +40,7 @@ public class Responder implements Runnable {
 
             System.out.println("Connection, sending data.");
 
-            if(requestLine.contains("/index.html")) {
+            if(request.get(0).contains("/index.html")) {
                 this.sendIndexHtmlResponse(out);
             } else {
                 this.sendDefaultResponse(out);

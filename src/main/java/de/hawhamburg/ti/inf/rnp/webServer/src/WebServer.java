@@ -7,7 +7,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 @CommandLine.Command(name = "GetClient", mixinStandardHelpOptions = true)
-public class AsyncWebServer implements Runnable {
+public class WebServer implements Runnable {
 
     @CommandLine.Option(names = { "-p", "--port" }, description = "Port")
     private int port = 80;
@@ -24,8 +24,9 @@ public class AsyncWebServer implements Runnable {
     public void start() throws IOException {
         ServerSocket s;
 
-        System.out.println("Webserver starting up on port 80");
+        System.out.printf("Webserver starting up on port %d\r\n", port);
         System.out.println("(press ctrl-c to exit)");
+
         try {
             s = new ServerSocket(this.port);
         } catch (Exception e) {
@@ -33,13 +34,12 @@ public class AsyncWebServer implements Runnable {
             return;
         }
 
-        System.out.println("Waiting for connection");
-
         while (true) {
+            System.out.println("Waiting for connection");
             Socket remote = s.accept();
 
-            Responder responder = new Responder(remote);
-            responder.run();
+            Thread thread = new Thread(new Responder(remote));
+            thread.start();
         }
     }
 }
