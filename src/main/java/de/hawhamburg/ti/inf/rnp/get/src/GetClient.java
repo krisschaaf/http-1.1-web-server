@@ -33,7 +33,7 @@ public class GetClient implements Runnable {
 
         System.out.println("Getting " + this.getFile() + " from " + this.getHost() + ":" + this.getPort());
 
-        GetExecutor hg = new GetExecutor(this);
+        GetHandler hg = new GetHandler(this);
         hg.get();
     }
 

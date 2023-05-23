@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ResponseHandler implements Runnable {
-    private Socket remote;
-    private ResponseBuilder responseBuilder;
+    private final Socket remote;
+    private final ResponseBuilder responseBuilder;
 
     public ResponseHandler(Socket socket) throws IOException {
         this.remote = socket;
@@ -23,7 +23,7 @@ public class ResponseHandler implements Runnable {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(remote.getInputStream()));
 
             List<String> request = new ArrayList<>();
-            String requestLine = bufferedReader.readLine();;
+            String requestLine = bufferedReader.readLine();
 
             while(!requestLine.isEmpty()) {
                 request.add(requestLine);
@@ -31,16 +31,12 @@ public class ResponseHandler implements Runnable {
             }
 
             switch (Validator.validateRequest(request)) {
-                case BAD_REQUEST:
-                    this.responseBuilder.respondWithBadRequest();
-                    break;
-                case HEADER_FIELDS_TOO_LARGE:
-                    this.responseBuilder.respondWithRequestHeaderFieldsTooLarge();
-                    break;
-                case OK:
+                case BAD_REQUEST -> this.responseBuilder.respondWithBadRequest();
+                case HEADER_FIELDS_TOO_LARGE -> this.responseBuilder.respondWithRequestHeaderFieldsTooLarge();
+                case OK -> {
                     String filename = request.get(0).split(" ")[1];
                     this.checkForFiles(filename);
-                    break;
+                }
             }
 
             remote.close();

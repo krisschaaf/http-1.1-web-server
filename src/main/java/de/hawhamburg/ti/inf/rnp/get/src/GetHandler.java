@@ -7,10 +7,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class GetExecutor {
+public class GetHandler {
     private GetClient getClient;
 
-    GetExecutor(GetClient getClient){
+    GetHandler(GetClient getClient){
         this.getClient = getClient;
     }
 
