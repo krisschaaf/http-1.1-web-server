@@ -5,8 +5,6 @@ import java.util.Map;
 import static java.util.Map.entry;
 
 public final class ResponderUtils {
-    public static final String REQUEST_REGEX = "^(GET|POST|PUT|DELETE|HEAD|OPTIONS|PATCH)[ ]+(\\/[\\w]+)+\\.[\\w]+[ ]HTTP\\/1.1$";
-    public static final String REQUEST_HEADER_REGEX = "^[\\w-]+:[ ][\\w]+$";
 
     public static String getMimeType (String type){
         Map<String, String> mimeTypeMap = Map.ofEntries(
