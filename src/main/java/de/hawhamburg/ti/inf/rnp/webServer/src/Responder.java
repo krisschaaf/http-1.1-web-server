@@ -32,16 +32,16 @@ public class Responder implements Runnable {
                 requestLine = bufferedReader.readLine();
             }
 
-            if (!validateRequest(request)) {
-                this.responseBuilder.respondWithBadRequest();
-            }
-
-            System.out.println("Connection, sending data.");
-
-            if(request.get(0).contains("/index.html")) {
-                this.responseBuilder.sendIndexHtmlResponse();
-            } else {
-                this.responseBuilder.sendDefaultResponse();
+            switch (Validator.validateRequest(request)) {
+                case BAD_REQUEST:
+                    this.responseBuilder.respondWithBadRequest();
+                    break;
+                case HEADER_FIELDS_TOO_LARGE:
+                    this.responseBuilder.respondWithRequestHeaderFieldsTooLarge();
+                    break;
+                case OK:
+                    this.checkForFiles(request.get(0).split(" ")[1]);
+                    break;
             }
 
             remote.close();
@@ -50,19 +50,11 @@ public class Responder implements Runnable {
         }
     }
 
-    private boolean validateRequest(List<String> request) {
-        if(!request.get(0).matches(ResponderUtils.REQUEST_REGEX)) {
-            return false;
+    private void checkForFiles(String file) {
+        if(file.equals("/index.html")) {
+            this.responseBuilder.sendIndexHtmlResponse();
+        } else {
+            this.responseBuilder.sendDefaultResponse();
         }
-        for (int i = 1; i < request.size(); i++) {
-            if (!request.get(i).matches(ResponderUtils.REQUEST_HEADER_REGEX)) {
-                return false;
-            } else {
-                if(request.get(i).length() > 100) {
-                    this.responseBuilder.respondWithRequestHeaderFieldsTooLarge();
-                }
-            }
-        }
-        return true;
     }
 }
