@@ -38,7 +38,7 @@ public class WebServer implements Runnable {
             System.out.println("Waiting for connection");
             Socket remote = socket.accept();
 
-            Thread thread = new Thread(new Responder(remote));
+            Thread thread = new Thread(new ResponseHandler(remote));
             thread.start();
         }
     }

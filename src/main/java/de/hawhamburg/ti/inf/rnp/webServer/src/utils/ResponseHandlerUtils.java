@@ -4,7 +4,7 @@ import java.util.Map;
 
 import static java.util.Map.entry;
 
-public final class ResponderUtils {
+public final class ResponseHandlerUtils {
 
     public static String getMimeType (String type){
         Map<String, String> mimeTypeMap = Map.ofEntries(

@@ -1,7 +1,5 @@
 package de.hawhamburg.ti.inf.rnp.webServer.src;
 
-import de.hawhamburg.ti.inf.rnp.webServer.src.utils.ResponderUtils;
-
 import java.util.List;
 
 public final class Validator {

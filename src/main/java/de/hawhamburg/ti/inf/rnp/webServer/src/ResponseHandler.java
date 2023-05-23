@@ -1,7 +1,5 @@
 package de.hawhamburg.ti.inf.rnp.webServer.src;
 
-import de.hawhamburg.ti.inf.rnp.webServer.src.utils.ResponderUtils;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -10,11 +8,11 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Responder implements Runnable {
+public class ResponseHandler implements Runnable {
     private Socket remote;
     private ResponseBuilder responseBuilder;
 
-    public Responder(Socket socket) throws IOException {
+    public ResponseHandler(Socket socket) throws IOException {
         this.remote = socket;
         this.responseBuilder = new ResponseBuilder(new PrintWriter(remote.getOutputStream()));
     }
@@ -40,7 +38,8 @@ public class Responder implements Runnable {
                     this.responseBuilder.respondWithRequestHeaderFieldsTooLarge();
                     break;
                 case OK:
-                    this.checkForFiles(request.get(0).split(" ")[1]);
+                    String filename = request.get(0).split(" ")[1];
+                    this.checkForFiles(filename);
                     break;
             }
 
@@ -50,8 +49,8 @@ public class Responder implements Runnable {
         }
     }
 
-    private void checkForFiles(String file) {
-        if(file.equals("/index.html")) {
+    private void checkForFiles(String filename) {
+        if(filename.equals("/index.html")) {
             this.responseBuilder.sendIndexHtmlResponse();
         } else {
             this.responseBuilder.sendDefaultResponse();
