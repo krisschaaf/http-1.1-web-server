@@ -1,0 +1,147 @@
+#!/bin/bash -e
+#
+# Tile image into blocks and create a HTML page
+# Copyright (C) 2020 by Thomas Dreibholz
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Contact: dreibh@simula.no
+#
+
+# ====== Handle parameters ==================================================
+if [ $# -lt 3 ] ; then
+   echo >&2 "Usage: $0 input_image stepX stepY [title]"
+   exit 1
+fi
+
+inputFile="$1"
+stepX=$2
+stepY=$3
+title="$4"
+
+
+# ====== Initialise =========================================================
+inputBasename=`basename --suffix=.jpeg ${inputFile}`
+outputFileBasePrefix="${inputBasename}-${stepX}x${stepY}"
+outputFilePrefix="tiles/${outputFileBasePrefix}/${outputFileBasePrefix}"
+outputFileSuffix=".webp"
+outputFileHTML="images/${outputFileBasePrefix}.html"
+today=`date +"%d.%m.%Y"`
+if [ "${title}" == "" ] ; then
+   title="${inputBasename}"
+fi
+
+# Create directory hierarchy
+mkdir -p images/tiles/${outputFileBasePrefix}
+
+
+# ====== Set tiling constants ===============================================
+inputImageSize=`gm identify -format "%wx%h" "${inputFile}"`
+width=`echo "$inputImageSize" | sed -e "s/x[0-9]*$//"`
+height=`echo "$inputImageSize" | sed -e "s/^[0-9]*x//"`
+echo "${inputBasename} - width=${width} height=${height}:"
+
+let x0=(${width}%${stepX})/2
+let y0=(${height}%${stepY})/2
+let maxX=${width}-${x0}
+let maxY=${height}-${y0}
+let columns=(${width}/${stepX})
+let rows=(${height}/${stepY})
+let tiles=${columns}*${rows}
+
+echo "x0=${x0} y0=${y0} maxX=${maxX} maxY=${maxY}  =>  ${columns} columns * ${rows} rows ⇒ ${tiles} tiles"
+
+
+# ====== Begin HTML file ====================================================
+cat >${outputFileHTML} <<EOF
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+<title>${title}</title>
+ <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+ <meta name="Viewport" content="width=device-width; initial-scale=1" />
+ <link rel="stylesheet" href="../stylesheet.css" type="text/css" />
+ <link rel="shortcut icon" href="../graphics/icons/icon-tux.png" />
+ <style>
+div.grid-container {
+  display: grid;
+  grid-template-columns: repeat(${columns}, auto);
+  grid-template-rows: repeat(${rows}, auto);
+  grid-gap: 1px 1px;
+  justify-content: center;
+
+}
+img.grid-item {
+   max-width: 100%;
+   max-height: 100%;
+}
+ </style>
+</head>
+
+<body>
+
+<!-- ###### Header ################################################### -->
+
+<h1>${title}</h1>
+ <p class="center">${columns} columns * ${rows} rows ⇒ ${tiles} tiles</p>
+ <div class="grid-container">
+EOF
+
+
+# ====== Create images and img tags =========================================
+(
+   y=${y0} ; row=1 ; while [ $y -lt ${maxY} ] ; do
+      x=${x0} ; column=1 ; while [ $x -lt ${maxX} ] ; do
+         # echo >&2 "${column} ${row}"
+
+         outputFileName=`printf "${outputFilePrefix}-C%02d-R%02d${outputFileSuffix}" ${column} ${row}`
+         echo "gm convert ${inputFile} -crop ${stepX}x${stepY}+${x}+${y} images/${outputFileName}"
+
+         echo "  <img class=\"grid-item\" title=\"Column ${column}, Row ${row}\" alt=\"${column}/${row}\" src=\"${outputFileName}\" />" >>${outputFileHTML}
+
+         let x=$x+${stepX}
+         let column=${column}+1
+      done
+      let y=$y+${stepY}
+      let row=${row}+1
+   done
+) | parallel
+
+
+# ====== Finish HTML file ===================================================
+cat >>${outputFileHTML} <<EOF
+ </div>
+
+ <hr />
+
+<!-- ###### Copyright ################################################ -->
+
+<div class="footer">
+ <p>
+  ©️ ${today} <a href="https://www.uni-due.de/~be0001">Thomas Dreibholz</a>
+ </p>
+ <p>
+  <a href="https://validator.w3.org/check?uri=referer"><img class="borderless" src="../graphics/w3c-images/valid-xhtml11-v.svg" alt="Valid XHTML 1.1!" height="31" width="88" /></a>
+  <a href="https://jigsaw.w3.org/css-validator/validator?uri=https://www.uni-due.de/~be0001/stylesheet.css"><img class="borderless" src="../graphics/w3c-images/valid-css-v.svg" alt="Valid CSS!" height="31" width="88" /></a>
+ </p>
+</div>
+
+</body>
+
+</html>
+EOF
+tidy -q -o /dev/null ${outputFileHTML}
+echo "=> Wrote ${outputFileHTML}"

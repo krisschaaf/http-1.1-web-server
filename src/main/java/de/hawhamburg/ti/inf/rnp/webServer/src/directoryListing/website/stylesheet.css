@@ -1,0 +1,224 @@
+/*
+My Website CSS
+Copyright (C) 1997-2020 by Thomas Dreibholz
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http:www.gnu.org/licenses/>.
+
+Contact: dreibh@iem.uni-due.de
+*/
+
+
+/* ###### Body ########################################################### */
+
+/* The updated layout used at the University of Essen */
+body {
+   background-image: url(graphics/backgrounds/background-essen.png);
+}
+
+
+/* The old "Rechnernetze"-style layout used at the University of Bonn */
+/*
+body {
+   background-image: url(graphics/backgrounds/background-bonn.png);
+   margin-left: 4em;
+}
+*/
+
+/* Test layout */
+/*
+body {
+   background-image: url(graphics/backgrounds/background-wiehl.png);
+   color: white;
+}
+*/
+
+
+/* ###### Header and footer ############################################## */
+
+div.header {
+   text-align: center;
+   /* white-space: nowrap; */
+}
+
+div.footer {
+   text-align: left;
+   /* white-space: nowrap; */
+}
+
+
+/* ###### Links ########################################################## */
+
+/* Display HTTP, HTTPS and other (local) links in different colours: */
+
+/* HTTP: */
+/*a[href^='http://'] { color: red; }*/
+/* FTP: */
+/*a[href^='ftp://'] { color: magenta; }*/
+/* HTTPS: */
+/*a[href^='https://'] { color: darkgreen; }*/
+/* Internal (non HTTP/HTTPS): */
+/*a:not([href^=http|ftp]) { color: blue; }*/
+
+
+/* ###### Content ######################################################## */
+
+img.borderless {
+   border-style: hidden;
+}
+
+h1 { text-align: center; }
+h2 { text-align: left; }
+h3 { text-align: left; }
+
+p.description {
+   text-align: justify;
+}
+
+p.center {
+   text-align: center;
+}
+
+
+/* ###### Contact ######################################################## */
+
+/* Style the header */
+div.contact-header {
+  padding: 5px;
+  text-align: center;
+  font-size: 12pt;
+  font-weight: bold;
+}
+
+div.contact-container {
+   padding: 10px;
+   /* background-color: blue; */
+   display: flex;
+   flex-direction: row;
+   flex-wrap: wrap-reverse;
+   justify-content: space-around;
+   /* align-items: center; */
+}
+
+@media (max-width: 800px) {
+   div.contact-container {
+      flex-direction: column-reverse;
+   }
+}
+
+div.contact-details {
+  flex: 1;
+  /* background-color: yellow; */
+}
+
+p.contact-details {
+   padding: 0em 16pt;
+   min-width: 300px;
+   hyphens: auto;
+}
+
+div.contact-photo {
+  /* background: cyan; */
+  align-self: center;
+  height: 25em;
+}
+
+img.contact-photo {
+   filter: drop-shadow(5pt 5pt 5pt #222);
+   border-radius: 15pt;
+
+   display: block;
+   width: auto;
+   height: auto;
+   max-height: 100%;
+}
+
+div.contact-footer {
+  background-color: grey;
+  padding: 2px;
+  text-align: center;
+  color: white;
+}
+
+
+/* ###### Code and commands ############################################## */
+pre {
+    white-space: pre-wrap;
+    background: #ffff5522;
+    margin-left: 1em;
+    margin-right: 1em;
+    border: 1px solid gray;
+    padding: 0.75em;
+}
+
+code {
+    display: block;
+    white-space: pre-wrap;
+    background: #ffff5522;
+}
+
+
+/* ###### Publication lists ############################################## */
+
+p.publication-details {
+   text-align:    justify;
+   margin-top:    8pt;
+   margin-bottom: 8pt;
+   margin-right:  12pt;
+   margin-left:   12pt;
+}
+
+div.publication-details-hiddenbox {
+   display:      none;
+   border-style: dashed;
+   border-width: 2px;
+   border-color: #98bf21;
+}
+
+li.treeview-collapsed {
+   list-style-image: url(https://www.nntb.no/pub/nornet-publications/graphics/icons/icon-collapsed.svg);
+}
+
+li.treeview-expanded {
+   list-style-image: url(https://www.nntb.no/pub/nornet-publications/graphics/icons/icon-expanded.svg);
+}
+
+
+table.center {
+   text-align:   left;
+   margin-left:  auto;
+   margin-right: auto;
+}
+
+
+/* ###### Slideshow ###################################################### */
+
+table.previewtable {
+   text-align:   left;
+   margin-left:  auto;
+   margin-right: auto;
+}
+
+td.previewtable {
+   text-align:       center;
+   vertical-align:   middle;
+   background-color: rgb(255,255,75);
+   font-size:        small;
+}
+
+td.sscontrol {
+   text-align:       center;
+   vertical-align:   middle;
+   background-color: rgb(255,255,100);
+   font-size:        small;
+}

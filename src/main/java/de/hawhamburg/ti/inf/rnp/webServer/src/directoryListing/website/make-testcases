@@ -1,0 +1,73 @@
+#!/bin/bash -e
+#
+# Create web server test cases
+# Copyright (C) 2020 by Thomas Dreibholz
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Contact: dreibh@simula.no
+#
+
+# ====== Text and PDF Files =================================================
+mkdir -p text
+mkdir -p pdf
+
+cat >text/Test.txt <<EOF
+This is a test!
+Dies ist ein Test!
+Dette er en test!
+EOF
+
+cp /usr/share/common-licenses/GPL-3 text/GPL-3.txt
+
+(
+   for rfc in 793 1945 4960 5351 ; do
+      echo curl --silent -o text/rfc${rfc}.txt https://www.rfc-editor.org/rfc/rfc${rfc}.txt
+   done
+   curl --silent -o pdf/Dre2012.pdf https://duepublico2.uni-due.de/servlets/MCRFileNodeServlet/duepublico_derivate_00029737/Dre2012_final.pdf
+   curl --silent -o pdf/SoftCOM2020-HiPerConTracer.pdf https://www.simula.no/file/softcom2020-hipercontracer-webpdf-0/download
+   curl --silent -o pdf/LCN2020-SimulaMetEPC-Demo.pdf https://www.simula.no/file/lcn2020-simulametepc-demo-webpdf/download
+) | parallel
+
+
+# ====== Other Files ========================================================
+pushd misc
+bibtexconv Referenzarchiv.bib <Literature-HTML.export >Literature.html
+bibtexconv-odt /usr/share/doc/bibtexconv/examples/ODT-Template.odt Literature.odt Referenzarchiv.bib Literature-ODT.export
+libreoffice --convert-to docx Literature.odt
+bibtexconv Referenzarchiv.bib -export-to-bibtex=Literature.bib <Literature-BibTeX.export >/dev/null
+popd
+
+
+# ====== Binary Files =======================================================
+mkdir -p binary
+(
+   echo ./make-testfile binary/test-1KiB.data         1
+   echo ./make-testfile binary/test-64KiB.data       64
+   echo ./make-testfile binary/test-1MiB.data      1024
+   echo ./make-testfile binary/test-16MiB.data    16384
+   echo ./make-testfile binary/test-128MiB.data  131072
+   echo ./make-testfile binary/test-1GiB.data   1048576
+) | parallel
+
+# ====== Images =============================================================
+mkdir -p images
+for image in Hamburg1.jpeg Hamburg2.jpeg SantaClaus.jpeg ; do
+   curl --silent -o images/${image} https://raw.githubusercontent.com/dreibh/simulamet/master/src/background/Input/${image}
+done
+for size in 512 256 128 64 ; do
+   ./make-tiles images/SantaClaus.jpeg ${size} ${size} "Santa Claus"
+   ./make-tiles images/Hamburg1.jpeg   ${size} ${size} "Hamburg 1"
+   ./make-tiles images/Hamburg2.jpeg   ${size} ${size} "Hamburg 2"
+done

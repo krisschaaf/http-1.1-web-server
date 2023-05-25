@@ -1,0 +1,4 @@
+include Bibliography.export
+
+sort label/A
+export

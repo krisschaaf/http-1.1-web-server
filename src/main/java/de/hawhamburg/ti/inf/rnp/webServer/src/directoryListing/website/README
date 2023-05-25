@@ -1,0 +1,15 @@
+This folder contains the scripts and files to build the test website.
+
+
+1. Required packages (Ubuntu):
+- bibtexconv
+- curl
+- graphicsmagick
+- parallel
+- tidy
+- simulamet-desktop (from PPA ppa:dreibh/ppa)
+
+
+2. Build test website files:
+
+./make-testcases

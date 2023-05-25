@@ -1,0 +1,88 @@
+# Select entries.
+citeAll
+
+
+monthNames Januar Februar März April Mai Juni Juli August September Oktober November Dezember
+sort year/D month/D day/D title/A
+
+
+# ###########################################################################
+# #### Export to XHTML 1.1                                               ####
+# ###########################################################################
+
+echo <?xml version="1.0" encoding="utf-8" ?>\n
+echo <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">\n
+echo <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">\n
+echo <head>\n
+echo <title>Bibliography</title>\n
+echo <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />\n
+echo <meta name="Author" content="BibTeXConv" />\n
+echo <meta name="Description" content="Bibliography" />\n
+echo <meta name="Keywords" content="Bibliography" />\n
+echo <meta name="Classification" content="Bibliography" />\n
+echo <link rel="stylesheet" href="stylesheet.css" type="text/css" />\n
+echo <link rel="shortcut icon" href="graphics/icons/icon-uniessen.png" />\n
+echo <script type="text/javascript" src="javascript/publication-list-treeview.js"></script>\n
+echo </head>\n
+
+echo <body>\n\n
+
+echo <!-- ###### Bibliography ############################################# -->\n
+echo <h2 id="Bibliography">Bibliography</h2>\n\n
+
+
+# ====== Set header and trailer of each publication entry ===================
+# ----- Encode strings in XML style, e.g. <, >, &, etc.--------------
+xmlStyle
+# ----- Non-breakable space character -------------------------------
+nbsp &nbsp;
+
+
+# ====== This is the printing template ======================================
+templatenew
+
+# ***** Begin of Subsection: YEAR *******************************************
+template+ <ul>\n\n
+
+# ****** Begin of Entry
+template+ <li id="Bibliography-%{html-label}" class="treeview-collapsed">
+template+ <div>
+template+ <p class=\"description\">
+
+# ***** Authors *************************************************************
+template+ %{begin-author-loop}[%{is-first-author?}|%{is-last-author?} and |; ]
+template+ %{author-family-name}[, %{author-initials}]
+template+ %{end-author-loop}:
+
+# ***** Title ***************************************************************
+template+  <span[ xml:lang="%{xml-language}"]>
+template+ ["<a[ type="%{url-mime}"] href="%{url}">%{title}</a>"|"%{title}"]
+template+ </span>
+
+# ***** Bibliographic data of publication ***********************************
+template+ [, %{how-published}][, in <em>%{journal}</em>][, in <em>%{booktitle}</em>]
+template+ [, %{custom-4}|, %{type}[~%{number}][, %{series}][, vol.~%{volume}][, pp.~%{pages}]|[, %{series}][, vol.~%{volume}][, no.~%{number}][, pp.~%{pages}]]
+template+ [, %{publisher}][, %{school}][, %{institution}]
+#template+ [, URN~<a href="http://www.nbn-resolving.de/%{urn}">%{urn}</a>]
+#template+ [, DOI~<a href="http://dx.doi.org/%{doi}">%{doi}</a>]
+#template+ [, %{isbn}][, %{issn}]
+template+ [, %{address}]
+template+ [, %{note}]
+#template+ [, [[%{day}.~%{month-name}~|%{month-name}~]%{year}].
+template+ [, [[%{month-name}~]%{year}].
+
+template+ </p>
+template+ </div>
+
+# ****** End of Entry
+template+ </li>\n\n
+
+template+ </ul>\n\n
+
+# ====== Finally, print all selected publications ===========================
+export
+
+
+# ====== Generate tail ======================================================
+echo </body>\n
+echo </html>\n

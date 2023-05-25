@@ -1,0 +1,130 @@
+# Select entries.
+
+include Bibliography.export
+
+# monthNames Januar Februar März April Mai Juni Juli August September Oktober November Dezember
+sort year/D month/D day/D title/A
+# sort label/A
+
+
+# ###########################################################################
+# #### Export to XHTML 1.1                                               ####
+# ###########################################################################
+
+echo <?xml version="1.0" encoding="utf-8" ?>\n
+echo <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">\n
+echo <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">\n
+echo <head>\n
+echo <title>Bibliography</title>\n
+echo <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />\n
+echo <meta name="Author" content="BibTeXConv" />\n
+echo <meta name="Description" content="Bibliography" />\n
+echo <meta name="Keywords" content="Bibliography" />\n
+echo <meta name="Classification" content="Bibliography" />\n
+echo <link rel="stylesheet" href="../stylesheet.css" type="text/css" />\n
+echo <link rel="shortcut icon" href="../graphics/icons/icon-uniessen.png" />\n
+echo <script type="text/javascript" src="../javascript/publication-list-treeview.js"></script>\n
+echo </head>\n
+
+echo <body>\n\n
+
+echo <!-- ###### Bibliography ############################################# -->\n
+echo <h2 id="Bibliography">Bibliography</h2>\n\n
+
+
+# ====== Set header and trailer of each publication entry ===================
+# ----- Encode strings in XML style, e.g. <, >, &, etc.--------------
+xmlStyle
+# ----- Non-breakable space character -------------------------------
+nbsp &nbsp;
+
+
+# ====== This is the printing template ======================================
+templatenew
+
+# ***** Begin of Subsection: YEAR *******************************************
+template+ [%{begin-subdivision-year}<h3 id="Publications-%{year}">%{year}</h3><ul>\n\n]
+
+# ****** Begin of Entry *****************************************************
+template+ <li id="Publications-%{html-label}" class="treeview-collapsed">
+template+ <div>
+template+ <p class=\"description\">
+
+# ***** Authors *************************************************************
+template+ <strong>%{begin-author-loop}[%{is-first-author?}|%{is-last-author?} and |; ]
+template+ %{author-family-name}[, %{author-initials}]
+template+ %{end-author-loop}</strong>:
+
+# ***** Title ***************************************************************
+template+  <span[ xml:lang="%{xml-language}" lang="%{xml-language}"]>
+template+ [``<a[ type="%{url-mime}"] href="%{url}">%{title}</a>´´|``%{title}´´]
+template+ </span>
+
+# ****** Download ***********************************************************
+template+ [%{url}%{is-not?} (|%{language}%{is-not?} (]
+template+ [[<a type="%{url-mime}" href="%{url}">%{url-type}</a>, ]%{url-size-kib}~KiB]
+
+# ****** Language ***********************************************************
+# Use <span> to avoid link-break before language flag image. &nbsp; would not work here!
+template+ [%{url}%{is-not?}[%{language}%{is-not?}<span style="white-space:nowrap;">, ]]
+# ------ Language variants --------------------
+#template+ [%{content-language}%{is?norsk}<img style="height: 0.75em;" alt="in Norwegian" title="in Norwegian" src="graphics/flags/flag-norway.png" />
+#template+ |%{content-language}%{is?german}<img style="height: 0.75em;" alt="in German" title="in German" src="graphics/flags/flag-germany.png" />
+#template+ |%{content-language}%{is?ngerman}<img style="height: 0.75em;" alt="in German" title="in German" src="graphics/flags/flag-germany.png" />
+#template+ |%{content-language}%{is?english}<img style="height: 0.75em;" alt="in English" title="in English" src="graphics/flags/flag-england.png" />
+#template+ |%{content-language}%{is?chinese}<img style="height: 0.75em;" alt="in Chinese" title="in Chinese" src="graphics/flags/flag-china.png" />
+#template+ |in %{content-language}]
+template+ [%{content-language}%{is?norsk}🇳🇴
+template+ |%{content-language}%{is?german}🇩🇪
+template+ |%{content-language}%{is?ngerman}🇩🇪
+template+ |%{content-language}%{is?chinese}🇨🇳
+template+ |%{content-language}%{is?english}🇬🇧]
+# ---------------------------------------------
+
+template+ [%{language}%{is-not?})[%{url}%{is-not?}</span>]|%{url}%{is-not?})]
+
+# ***** Bibliographic data of publication ***********************************
+template+ [, %{how-published}][, in <em>%{journal}</em>][, in <em>%{booktitle}</em>]
+template+ [, %{custom-4}|, %{type}[~%{number}][, %{series}][, vol.~%{volume}][, pp.~%{pages}]|[, %{series}][, vol.~%{volume}][, no.~%{number}][, pp.~%{pages}]]
+template+ [, %{publisher}][, %{school}][, %{institution}]
+template+ [, URN~<a href="https://nbn-resolving.org/%{urn}">%{urn}</a>]
+template+ [, DOI~<a href="https://dx.doi.org/%{doi}">%{doi}</a>]
+template+ [, %{isbn}][, %{issn}][, %{address}]
+template+ [, %{note}][, [[%{month-name}~%{day}, |%{month-name}~]%{year}].
+#template+ , \[<a type="text/x-bibtex" href="bibtex/%{label}.bib">BibTeX</a>
+#template+ , <a type="text/xml" href="bibxml/%{label}.xml">XML</a>\].
+
+# ****** Awards *************************************************************
+template+ [ <strong>%{custom-1}.</strong>]
+template+ </p>
+template+ </div>
+
+# ***** Details *************************************************************
+template+ [[%{keywords}][%{abstract}][%{url}][%{url-md5}]%{is-not?}\n
+template+ <div class="publication-details-hiddenbox">
+template+ [<p class="publication-details"><strong>Keywords: </strong>
+template+ <span[ xml:lang="%{xml-language}" lang="%{xml-language}"]>%{keywords}</span></p>
+template+ ]
+template+ [<p class="publication-details"><strong>Abstract: </strong>
+template+ <span[ xml:lang="%{xml-language}" lang="%{xml-language}"]>%{abstract}</span></p>
+template+ ]
+template+ [<p class="publication-details" style="text-align: left;"><strong>URL:&nbsp;</strong>
+template+ <a[ type="%{url-mime}"] href="%{url}">%{url}</a></p>
+template+ ]
+template+ [<p class="publication-details"><strong>MD5: </strong> %{url-md5}</p>]
+template+ </div>\n]
+
+# ****** End of Entry *******************************************************
+template+ </li>\n\n
+
+# ***** End of Subsection: YEAR *********************************************
+template+ [%{end-subdivision-year}</ul>\n\n]
+
+
+# ====== Finally, print all selected publications ===========================
+export
+
+
+# ====== Generate tail ======================================================
+echo </body>\n
+echo </html>\n
