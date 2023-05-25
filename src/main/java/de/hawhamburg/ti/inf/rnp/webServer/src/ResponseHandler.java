@@ -1,5 +1,7 @@
 package de.hawhamburg.ti.inf.rnp.webServer.src;
 
+import de.hawhamburg.ti.inf.rnp.webServer.src.website.DirectoryListing;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -12,9 +14,12 @@ public class ResponseHandler implements Runnable {
     private final Socket remote;
     private final ResponseBuilder responseBuilder;
 
+    private final DirectoryListing directoryListing;
+
     public ResponseHandler(Socket socket) throws IOException {
         this.remote = socket;
         this.responseBuilder = new ResponseBuilder(new PrintWriter(remote.getOutputStream()));
+        this.directoryListing = DirectoryListing.getInstance();
     }
 
     @Override
@@ -35,7 +40,11 @@ public class ResponseHandler implements Runnable {
                 case HEADER_FIELDS_TOO_LARGE -> this.responseBuilder.respondWithRequestHeaderFieldsTooLarge();
                 case OK -> {
                     String filename = request.get(0).split(" ")[1];
-                    this.checkForFiles(filename);
+                    if(this.directoryListing.directoryContainsFile(filename)) {
+                        this.returnFileAsResponse(filename);
+                    } else {
+                        this.returnDirectoryListingAsResponse();
+                    }
                 }
             }
 
@@ -45,11 +54,11 @@ public class ResponseHandler implements Runnable {
         }
     }
 
-    private void checkForFiles(String filename) {
-        if(filename.equals("/index.html")) {
-            this.responseBuilder.sendIndexHtmlResponse();
-        } else {
-            this.responseBuilder.sendDefaultResponse();
-        }
+    private void returnDirectoryListingAsResponse() {
+        // TODO implement me
+    }
+
+    private void returnFileAsResponse(String filename) {
+        //TODO implement me
     }
 }
