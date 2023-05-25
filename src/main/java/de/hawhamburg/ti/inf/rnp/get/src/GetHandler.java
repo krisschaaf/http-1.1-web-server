@@ -39,13 +39,13 @@ public class GetHandler {
                     String sliceText = new String(slice, StandardCharsets.UTF_8);
 
                     wtr.println(sliceText);
+                    wtr.flush();
                     Thread.sleep(getClient.getSlowMoTime());
                 }
             } else {
                 wtr.println(request);
             }
 
-            wtr.flush();
             BufferedReader bufRead = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
             getBytesFromReader(bufRead);

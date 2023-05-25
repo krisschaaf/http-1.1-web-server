@@ -1,5 +1,8 @@
 package de.hawhamburg.ti.inf.rnp.webServer.src.website;
 
+import de.hawhamburg.ti.inf.rnp.webServer.src.utils.DirectoryUtils;
+
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -11,35 +14,20 @@ import java.util.Set;
 
 // get SingletonInstance by DirectoryListing.getInstance()
 public class DirectoryListing {
+
     private static final DirectoryListing OBJ = new DirectoryListing();
-    private static final String FALLBACK_PATH = "/Users/krisschaaf";
-    private static final String RELATIVE_PATH = "/IdeaProjects/http-1.1-web-server/src/main/java/de/hawhamburg/ti/inf/rnp/webServer/src/website/content";
 
-    //TODO use this instead
-//    private static final String ABSOLUTE_PATH = getAbsolutePath();
-//    private static String getAbsolutePath() {
-//        try {
-//            return System.getProperty("user.home") + RELATIVE_PATH;
-//        } catch (Exception ex) {
-//            return FALLBACK_PATH + RELATIVE_PATH;
-//        }
-//    }
-
-    private static final String ABSOLUTE_PATH = FALLBACK_PATH + RELATIVE_PATH;
     private final Set<String> simpleFileSet = new HashSet<>();
-    private final Set<WebsiteFile> fullFileSet = new HashSet<>();
+
+    private final Set<File> fullFileSet = new HashSet<>();
 
     private DirectoryListing() {
         try {
-            simpleFileSet.addAll(this.getSimpleFileSetFromDir(ABSOLUTE_PATH));
-            fullFileSet.addAll(this.getFullFileSetFromDir(ABSOLUTE_PATH));
+            simpleFileSet.addAll(this.getSimpleFileSetFromDir(DirectoryUtils.ABSOLUTE_PATH));
+            fullFileSet.addAll(this.getFullFileSetFromDir(DirectoryUtils.ABSOLUTE_PATH));
         } catch (IOException ex) {
             System.err.println(ex.getMessage());
         }
-    }
-
-    public static DirectoryListing getInstance() {
-        return OBJ;
     }
 
     private Set<String> getSimpleFileSetFromDir(String dir) throws IOException {
@@ -57,18 +45,12 @@ public class DirectoryListing {
         return fileSet;
     }
 
-    private Set<WebsiteFile> getFullFileSetFromDir(String dir) throws IOException {
-        Set<WebsiteFile> fileSet = new HashSet<>();
+    private Set<File> getFullFileSetFromDir(String dir) throws IOException {
+        Set<File> fileSet = new HashSet<>();
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get(dir))) {
             for (Path path : stream) {
                 if (!Files.isDirectory(path)) {
-                    WebsiteFile file = new WebsiteFile(
-                            //TODO fix
-                            path.getFileName().toString(),
-                            3d,
-                            new Date(),
-                            ""
-                    );
+                    File file = new File(path.toAbsolutePath().toString());
                     fileSet.add(file);
                 } else {
                     fileSet.addAll(getFullFileSetFromDir(path.toAbsolutePath().toString()));
@@ -78,9 +60,24 @@ public class DirectoryListing {
         return fileSet;
     }
 
-    //TODO remove me
-    public static void main(String[] args) {
-        DirectoryListing dl = DirectoryListing.getInstance();
+    private String directoryListingToHTML(Set<File> directoryListing) {
+        StringBuilder html = new StringBuilder();
+        for (File file: directoryListing) {
+            String listItem = String.format("<li>Name: %1$s, Length: %2$d, LastModified: %3$s</li>\r\n",
+                    file.getName(),
+                    file.length(),
+                    new Date(file.lastModified()));
+            html.append(listItem);
+        }
+        return "<ul>\r\n" + html + "</ul>";
+    }
+
+    public static DirectoryListing getInstance() {
+        return OBJ;
+    }
+
+    public String getDirectoryListingAsHTML() {
+        return this.directoryListingToHTML(this.fullFileSet);
     }
 
     public boolean directoryContainsFile(String filename) {

@@ -4,4 +4,5 @@ public enum StatusCode {
     OK,
     BAD_REQUEST,
     HEADER_FIELDS_TOO_LARGE,
+    NOT_FOUND,
 }
