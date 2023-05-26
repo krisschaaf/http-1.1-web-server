@@ -20,9 +20,9 @@ public class ResponseHandler implements Runnable {
     private final SynchronizedLogger synchronizedLogger;
     private String logFile;
 
-    public ResponseHandler(Socket socket, String logFile) throws IOException {
+    public ResponseHandler(Socket socket, String logFile) {
         this.remote = socket;
-        this.responseBuilder = new ResponseBuilder(new PrintWriter(remote.getOutputStream()));
+        this.responseBuilder = new ResponseBuilder();
         this.validator = Validator.getInstance();
         this.logFile = logFile;
         this.synchronizedLogger = SynchronizedLogger.getInstance();
@@ -30,7 +30,7 @@ public class ResponseHandler implements Runnable {
 
     @Override
     public void run() {
-        this.synchronizedLogger.logAccess(remote.getRemoteSocketAddress().toString(), logFile);
+        this.synchronizedLogger.logAccess(this.remote.getRemoteSocketAddress().toString(), this.logFile);
 
         try {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(remote.getInputStream()));
@@ -58,33 +58,48 @@ public class ResponseHandler implements Runnable {
 
             switch (this.validator.validateRequest(request)) {
                 case BAD_REQUEST -> {
-                    this.responseBuilder.respondWithBadRequest(mimeType);
+                    this.sendResponse(this.responseBuilder.respondWithBadRequest(mimeType), contentRange);
                     this.synchronizedLogger.logResponse(ResponseBuilderUtils.RESPONSE_BAD_REQUEST, remote.getRemoteSocketAddress().toString(), filename, logFile);
                 }
                 case HEADER_FIELDS_TOO_LARGE -> {
-                    this.responseBuilder.respondWithRequestHeaderFieldsTooLarge(mimeType);
+                    this.sendResponse(this.responseBuilder.respondWithRequestHeaderFieldsTooLarge(mimeType), contentRange);
                     this.synchronizedLogger.logResponse(ResponseBuilderUtils.RESPONSE_REQUEST_HEADER_FIELDS_TOO_LARGE, remote.getRemoteSocketAddress().toString(), filename, logFile);
                 }
                 case NOT_FOUND -> {
-                    this.responseBuilder.respondWithDirectoryListing(mimeType);
+                    this.sendResponse(this.responseBuilder.respondWithDirectoryListing(mimeType), contentRange);
                     this.synchronizedLogger.logResponse(ResponseBuilderUtils.RESPONSE_NOT_FOUND, remote.getRemoteSocketAddress().toString(), filename, logFile);
                 }
                 case OK -> {
-                    this.returnFileAsResponse(filename, mimeType, contentRange);
+                    this.sendResponse(this.responseBuilder.respondWithFileContent(filename, mimeType), contentRange);
                     this.synchronizedLogger.logResponse(ResponseBuilderUtils.RESPONSE_OKAY, remote.getRemoteSocketAddress().toString(), filename, logFile);
                 }
             }
 
             remote.close();
         } catch (Exception ex) {
-            this.synchronizedLogger.logError(ex.getMessage(), remote.getRemoteSocketAddress().toString(),logFile);
+            this.synchronizedLogger.logError(ex.getMessage(), this.remote.getRemoteSocketAddress().toString(), this.logFile);
         }
     }
-    private void returnFileAsResponse(String filename, String mimeType, Optional<String> contentRange) {
-        if (contentRange.isPresent()){
-            responseBuilder.sendDefaultResponseWithContentRange(filename, mimeType, contentRange.get());
-        } else {
-            responseBuilder.sendDefaultResponse(filename, mimeType);
+
+    private void sendResponse(String response, Optional<String> contentRange) {
+        PrintWriter printWriter = null;
+        try {
+            printWriter = new PrintWriter(remote.getOutputStream());
+
+            if (contentRange.isPresent()){
+                printWriter.print(this.reduceResponseByContentRange(response, contentRange));
+            } else {
+                printWriter.print(response);
+            }
+        } catch (IOException ex) {
+            this.synchronizedLogger.logError(ex.getMessage(), this.remote.getRemoteSocketAddress().toString(), this.logFile);
+        } finally {
+            printWriter.flush();
         }
+    }
+
+    // TODO implement me (copy and adjust code from getHandler)
+    private String reduceResponseByContentRange(String response, Optional<String> contentRange) {
+        return "";
     }
 }

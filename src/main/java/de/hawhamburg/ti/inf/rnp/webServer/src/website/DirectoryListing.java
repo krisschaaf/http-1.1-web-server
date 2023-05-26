@@ -12,7 +12,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-// get SingletonInstance by DirectoryListing.getInstance()
 public class DirectoryListing {
 
     private static final DirectoryListing OBJ = new DirectoryListing();

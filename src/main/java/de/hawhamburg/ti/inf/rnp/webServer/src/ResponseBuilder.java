@@ -7,19 +7,13 @@ import de.hawhamburg.ti.inf.rnp.webServer.src.website.DirectoryListing;
 import java.io.*;
 
 public class ResponseBuilder {
-    private PrintWriter printWriter;
     private DirectoryListing directoryListing;
 
-    public ResponseBuilder(PrintWriter printWriter) {
-        this.printWriter = printWriter;
+    public ResponseBuilder() {
         this.directoryListing = DirectoryListing.getInstance();
     }
 
-    public void sendDefaultResponse(String filename, String contentType) {
-        printWriter.println(ResponseBuilderUtils.RESPONSE_OKAY);
-        printWriter.println(ResponseBuilderUtils.CONTENT_TYPE + contentType);
-        printWriter.println(ResponseBuilderUtils.SERVER_HEADER);
-        printWriter.println(ResponseBuilderUtils.CONTENT_HEADER);
+    private String getFile(String filename) {
         String line;
         String resp = "";
 
@@ -28,50 +22,57 @@ public class ResponseBuilder {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
 
             while ((line = bufferedReader.readLine()) != null) {
-                System.out.println(line);
                 resp += line;
             }
             bufferedReader.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
-        printWriter.println(resp);
-        printWriter.flush();
+        return resp;
     }
 
-    public void sendDefaultResponseWithContentRange (String filename, String mimeType, String contentRange){
+    public String respondWithFileContent(String filename, String contentType) {
+        StringBuilder stringBuilder = new StringBuilder();
+        
+        stringBuilder.append(ResponseBuilderUtils.RESPONSE_OKAY + "\r\n");
+        stringBuilder.append(ResponseBuilderUtils.CONTENT_TYPE + contentType + "\r\n");
+        stringBuilder.append(ResponseBuilderUtils.SERVER_HEADER + "\r\n");
+        stringBuilder.append(ResponseBuilderUtils.CONTENT_HEADER + "\r\n");
+        stringBuilder.append(getFile(filename) + "\r\n");
 
+        return stringBuilder.toString();
     }
 
-    public void sendIndexHtmlResponse(String contentType) {
-        printWriter.println(ResponseBuilderUtils.RESPONSE_OKAY);
-        printWriter.println(ResponseBuilderUtils.CONTENT_TYPE + contentType);
-        printWriter.println(ResponseBuilderUtils.SERVER_HEADER);
-        printWriter.println(ResponseBuilderUtils.INDEX_HTML);
-        printWriter.flush();
+    public String respondWithDirectoryListing(String contentType) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        stringBuilder.append(ResponseBuilderUtils.RESPONSE_NOT_FOUND + "\r\n");
+        stringBuilder.append(ResponseBuilderUtils.CONTENT_TYPE + contentType + "\r\n");
+        stringBuilder.append(ResponseBuilderUtils.SERVER_HEADER + "\r\n");
+        stringBuilder.append(this.directoryListing.getDirectoryListingAsHTML() + "\r\n");
+
+        return stringBuilder.toString();
     }
 
-    public void respondWithDirectoryListing(String contentType) {
-        printWriter.println(ResponseBuilderUtils.RESPONSE_NOT_FOUND);
-        printWriter.println(ResponseBuilderUtils.CONTENT_TYPE + contentType);
-        printWriter.println(ResponseBuilderUtils.SERVER_HEADER);
-        printWriter.println(this.directoryListing.getDirectoryListingAsHTML());
-        printWriter.flush();
+    public String respondWithBadRequest(String contentType) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        stringBuilder.append(ResponseBuilderUtils.RESPONSE_BAD_REQUEST + "\r\n");
+        stringBuilder.append(ResponseBuilderUtils.CONTENT_TYPE + contentType + "\r\n");
+        stringBuilder.append(ResponseBuilderUtils.SERVER_HEADER + "\r\n");
+        stringBuilder.append("Invalid Request." + "\r\n");
+
+        return stringBuilder.toString();
     }
 
-    public void respondWithBadRequest(String contentType) {
-        printWriter.println(ResponseBuilderUtils.RESPONSE_BAD_REQUEST);
-        printWriter.println(ResponseBuilderUtils.CONTENT_TYPE + contentType);
-        printWriter.println(ResponseBuilderUtils.SERVER_HEADER);
-        printWriter.println("Invalid Request.");
-        printWriter.flush();
-    }
+    public String respondWithRequestHeaderFieldsTooLarge(String contentType) {
+        StringBuilder stringBuilder = new StringBuilder();
 
-    public void respondWithRequestHeaderFieldsTooLarge(String contentType) {
-        printWriter.println(ResponseBuilderUtils.RESPONSE_REQUEST_HEADER_FIELDS_TOO_LARGE);
-        printWriter.println(ResponseBuilderUtils.CONTENT_TYPE + contentType);
-        printWriter.println(ResponseBuilderUtils.SERVER_HEADER);
-        printWriter.println("Request Header fields too large");
-        printWriter.flush();
+        stringBuilder.append(ResponseBuilderUtils.RESPONSE_REQUEST_HEADER_FIELDS_TOO_LARGE + "\r\n");
+        stringBuilder.append(ResponseBuilderUtils.CONTENT_TYPE + contentType + "\r\n");
+        stringBuilder.append(ResponseBuilderUtils.SERVER_HEADER + "\r\n");
+        stringBuilder.append("Request Header fields too large" + "\r\n");
+
+        return stringBuilder.toString();
     }
 }
