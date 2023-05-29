@@ -19,7 +19,7 @@ public class WebServer implements Runnable {
     private int threads = 10;
 
     @Option(names = { "-l", "--logFile" }, description = "LogFile")
-    private String logFile = "/Users/krisschaaf/log.txt";
+    private String logFile;
 
     @Override
     public void run() {

@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 import static de.hawhamburg.ti.inf.rnp.webServer.src.utils.ResponseHandlerUtils.getMimeType;
 
 public class ResponseHandler implements Runnable {
-    private static final int maxFileSize = 23; // TODO
     private final Socket remote;
     private final ResponseBuilder responseBuilder;
     private final Validator validator;
