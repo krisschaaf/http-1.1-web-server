@@ -7,7 +7,7 @@ import java.util.List;
 
 public class Validator {
     private static final Validator OBJ = new Validator();
-    private static final String REQUEST_REGEX = "^(GET)[ ]+(\\/[\\w]+)+\\.[\\w]+[ ]HTTP\\/1.1$";
+    private static final String REQUEST_REGEX = "^(GET|POST|PUT|DELETE|HEAD|OPTIONS|PATCH)[ ]+(\\/[\\w-]+)+\\.[\\w]+[ ]HTTP\\/1.1$";
     private static final String REQUEST_HEADER_REGEX = "^[\\w-]+:[ ][\\w\\.-]+$";
     private static final int MAX_REQUEST_SIZE_IN_BYTES = 16000;
 

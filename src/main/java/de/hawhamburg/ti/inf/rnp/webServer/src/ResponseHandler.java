@@ -48,8 +48,17 @@ public class ResponseHandler implements Runnable {
 
             List<String> requestAsList = Arrays.stream(requestAsString.split("\r\n")).collect(Collectors.toList());
 
-            String filename = requestAsList.get(0).split(" ")[1];
-            String mimeType = getMimeType(filename.substring(filename.lastIndexOf(".")));
+            String fileName = requestAsList.get(0).split(" ")[1];
+
+            String fileEnding = "";
+
+            try {
+                fileName.substring(fileName.lastIndexOf("."));
+            } catch (Exception exception) {
+                System.err.println(exception.getMessage());
+            }
+
+            String mimeType = getMimeType(fileEnding);
 
             Optional<String> contentRange = Optional.empty();
             for (String req: requestAsList) {
@@ -61,27 +70,27 @@ public class ResponseHandler implements Runnable {
             switch (this.validator.validateRequest(requestAsList)) {
                 case BAD_REQUEST -> {
                     this.sendResponse(this.responseBuilder.respondWithBadRequest(mimeType), contentRange);
-                    this.synchronizedLogger.logResponse(ResponseBuilderUtils.RESPONSE_BAD_REQUEST, remote.getRemoteSocketAddress().toString(), filename, logFile);
+                    this.synchronizedLogger.logResponse(ResponseBuilderUtils.RESPONSE_BAD_REQUEST, remote.getRemoteSocketAddress().toString(), fileName, logFile);
                 }
                 case HEADER_FIELDS_TOO_LARGE -> {
                     this.sendResponse(this.responseBuilder.respondWithRequestHeaderFieldsTooLarge(mimeType), contentRange);
-                    this.synchronizedLogger.logResponse(ResponseBuilderUtils.RESPONSE_REQUEST_HEADER_FIELDS_TOO_LARGE, remote.getRemoteSocketAddress().toString(), filename, logFile);
+                    this.synchronizedLogger.logResponse(ResponseBuilderUtils.RESPONSE_REQUEST_HEADER_FIELDS_TOO_LARGE, remote.getRemoteSocketAddress().toString(), fileName, logFile);
                 }
                 case NOT_FOUND -> {
                     this.sendResponse(this.responseBuilder.respondWithDirectoryListing(mimeType), contentRange);
-                    this.synchronizedLogger.logResponse(ResponseBuilderUtils.RESPONSE_NOT_FOUND, remote.getRemoteSocketAddress().toString(), filename, logFile);
+                    this.synchronizedLogger.logResponse(ResponseBuilderUtils.RESPONSE_NOT_FOUND, remote.getRemoteSocketAddress().toString(), fileName, logFile);
                 }
                 case METHOD_NOT_ALLOWED -> {
                     this.sendResponse(this.responseBuilder.respondWithMethodNowAllowed(mimeType), contentRange);
-                    this.synchronizedLogger.logResponse(ResponseBuilderUtils.RESPONSE_METHOD_NOT_ALLOWED, remote.getRemoteSocketAddress().toString(), filename, logFile);
+                    this.synchronizedLogger.logResponse(ResponseBuilderUtils.RESPONSE_METHOD_NOT_ALLOWED, remote.getRemoteSocketAddress().toString(), fileName, logFile);
                 }
                 case REQUEST_ENTITY_TOO_LARGE -> {
                     this.sendResponse(this.responseBuilder.respondWithRequestEntityLooLarge(mimeType), contentRange);
-                    this.synchronizedLogger.logResponse(ResponseBuilderUtils.REQUEST_ENTITY_TOO_LARGE, remote.getRemoteSocketAddress().toString(), filename, logFile);
+                    this.synchronizedLogger.logResponse(ResponseBuilderUtils.REQUEST_ENTITY_TOO_LARGE, remote.getRemoteSocketAddress().toString(), fileName, logFile);
                 }
                 case OK -> {
-                    this.sendResponse(this.responseBuilder.respondWithFileContent(filename, mimeType), contentRange);
-                    this.synchronizedLogger.logResponse(ResponseBuilderUtils.RESPONSE_OKAY, remote.getRemoteSocketAddress().toString(), filename, logFile);
+                    this.sendResponse(this.responseBuilder.respondWithFileContent(fileName, mimeType), contentRange);
+                    this.synchronizedLogger.logResponse(ResponseBuilderUtils.RESPONSE_OKAY, remote.getRemoteSocketAddress().toString(), fileName, logFile);
                 }
             }
 
@@ -109,20 +118,24 @@ public class ResponseHandler implements Runnable {
     }
 
     private String reduceResponseByContentRange(String response, Optional<String> contentRange) {
-        byte[] responseContentInBytes = response.split(ResponseBuilderUtils.SERVER_HEADER)[1].getBytes();
+        String responseHeaders = response.split(ResponseBuilderUtils.SERVER_HEADER)[0];
+        String responseContent = response.split(ResponseBuilderUtils.SERVER_HEADER)[1];
+
+        byte[] responseContentInBytes = responseContent.getBytes();
+
         String contentRangeValues = contentRange.get().split("Content-Range: ")[1];
-        String reducedResponse = "";
+        String reducedResponseContent = "";
 
         try {
             if(contentRangeValues.contains("-")) {
                 int contentRangeStart = Integer.parseInt(contentRangeValues.split("-")[0]);
                 int contentRangeEnd = Integer.parseInt(contentRangeValues.split("-")[1]);
 
-                reducedResponse = new String(Arrays.copyOfRange(responseContentInBytes, contentRangeStart, contentRangeEnd), StandardCharsets.UTF_8);
+                reducedResponseContent = new String(Arrays.copyOfRange(responseContentInBytes, contentRangeStart, contentRangeEnd), StandardCharsets.UTF_8);
             } else {
                 int contentRangeStart = Integer.parseInt(contentRangeValues);
 
-                reducedResponse = new String(Arrays.copyOfRange(responseContentInBytes, contentRangeStart, responseContentInBytes.length), StandardCharsets.UTF_8);
+                reducedResponseContent = new String(Arrays.copyOfRange(responseContentInBytes, contentRangeStart, responseContentInBytes.length), StandardCharsets.UTF_8);
             }
         } catch (Exception ex) {
             //TODO refactor
@@ -131,6 +144,8 @@ public class ResponseHandler implements Runnable {
             }
         }
 
-        return reducedResponse;
+        return responseHeaders +
+                ResponseBuilderUtils.SERVER_HEADER +
+                reducedResponseContent;
     }
 }
