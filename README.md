@@ -8,6 +8,10 @@ The WebServer uses concurrency and can handle multiple requests at a time.
 I just needs to be started once, then it keeps running.  
 The WebClient will only be executed once per call.
 
+***Important:*** The WebServer needs to know the absolute path of the machine it's running on. 
+It can be adjusted inside the DirectoryUtils class. (This will be fixed in the future)
+> src/main/java/de/hawhamburg/ti/inf/rnp/webServer/src/utils/DirectoryUtils.java
+
 ### Arguments for WebServer:
 > **-p or --port**      → Port (default: 80)
 

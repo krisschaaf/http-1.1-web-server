@@ -7,9 +7,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static de.hawhamburg.ti.inf.rnp.webServer.src.utils.ResponseHandlerUtils.getMimeType;
 
@@ -37,29 +39,24 @@ public class ResponseHandler implements Runnable {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(remote.getInputStream()));
 
             String requestAsString = "";
-            List<String> requestAsList = new ArrayList<>(); // TODO remove
             String requestLine = bufferedReader.readLine();
 
             while(!requestLine.isEmpty()) {
-                requestAsString += requestLine;
-                requestAsList.add(requestLine); // TODO remove
+                requestAsString += requestLine + "\r\n";
                 requestLine = bufferedReader.readLine();
             }
 
-            // TODO use instead
-//            List<String> requestAsList = Arrays.stream(requestAsString.split("\r\n")).collect(Collectors.toList());
+            List<String> requestAsList = Arrays.stream(requestAsString.split("\r\n")).collect(Collectors.toList());
 
             String filename = requestAsList.get(0).split(" ")[1];
             String mimeType = getMimeType(filename.substring(filename.lastIndexOf(".")));
 
             Optional<String> contentRange = Optional.empty();
             for (String req: requestAsList) {
-                if (req.contains("Content Range")){
+                if (req.contains("Content-Range")){
                     contentRange = Optional.of(req);
                 }
             }
-
-            // TODO REQUESTED_FILE_TOO_LARGE
 
             switch (this.validator.validateRequest(requestAsList)) {
                 case BAD_REQUEST -> {
@@ -77,6 +74,10 @@ public class ResponseHandler implements Runnable {
                 case METHOD_NOT_ALLOWED -> {
                     this.sendResponse(this.responseBuilder.respondWithMethodNowAllowed(mimeType), contentRange);
                     this.synchronizedLogger.logResponse(ResponseBuilderUtils.RESPONSE_METHOD_NOT_ALLOWED, remote.getRemoteSocketAddress().toString(), filename, logFile);
+                }
+                case REQUEST_ENTITY_TOO_LARGE -> {
+                    this.sendResponse(this.responseBuilder.respondWithRequestEntityLooLarge(mimeType), contentRange);
+                    this.synchronizedLogger.logResponse(ResponseBuilderUtils.REQUEST_ENTITY_TOO_LARGE, remote.getRemoteSocketAddress().toString(), filename, logFile);
                 }
                 case OK -> {
                     this.sendResponse(this.responseBuilder.respondWithFileContent(filename, mimeType), contentRange);
@@ -107,8 +108,29 @@ public class ResponseHandler implements Runnable {
         }
     }
 
-    // TODO implement me (copy and adjust code from getHandler)
     private String reduceResponseByContentRange(String response, Optional<String> contentRange) {
-        return "";
+        byte[] responseContentInBytes = response.split(ResponseBuilderUtils.SERVER_HEADER)[1].getBytes();
+        String contentRangeValues = contentRange.get().split("Content-Range: ")[1];
+        String reducedResponse = "";
+
+        try {
+            if(contentRangeValues.contains("-")) {
+                int contentRangeStart = Integer.parseInt(contentRangeValues.split("-")[0]);
+                int contentRangeEnd = Integer.parseInt(contentRangeValues.split("-")[1]);
+
+                reducedResponse = new String(Arrays.copyOfRange(responseContentInBytes, contentRangeStart, contentRangeEnd), StandardCharsets.UTF_8);
+            } else {
+                int contentRangeStart = Integer.parseInt(contentRangeValues);
+
+                reducedResponse = new String(Arrays.copyOfRange(responseContentInBytes, contentRangeStart, responseContentInBytes.length), StandardCharsets.UTF_8);
+            }
+        } catch (Exception ex) {
+            //TODO refactor
+            if(ex instanceof ArrayIndexOutOfBoundsException || ex instanceof IllegalArgumentException) {
+                this.responseBuilder.respondWithBadRequest("");
+            }
+        }
+
+        return reducedResponse;
     }
 }
