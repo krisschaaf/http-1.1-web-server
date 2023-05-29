@@ -34,8 +34,7 @@ public class DirectoryListing {
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get(dir))) {
             for (Path path : stream) {
                 if (!Files.isDirectory(path)) {
-                    fileSet.add(path.getFileName()
-                            .toString());
+                    fileSet.add(path.toAbsolutePath().toString().split("content")[1]);
                 } else {
                     fileSet.addAll(getSimpleFileSetFromDir(path.toAbsolutePath().toString()));
                 }

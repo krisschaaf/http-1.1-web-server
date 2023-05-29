@@ -13,7 +13,7 @@ public class ResponseBuilder {
         this.directoryListing = DirectoryListing.getInstance();
     }
 
-    private String getFile(String filename) {
+    private static String getFile(String filename) {
         String line;
         String resp = "";
 
@@ -31,13 +31,12 @@ public class ResponseBuilder {
         return resp;
     }
 
-    public String respondWithFileContent(String filename, String contentType) {
+    public static String respondWithFileContent(String filename, String contentType) {
         StringBuilder stringBuilder = new StringBuilder();
         
         stringBuilder.append(ResponseBuilderUtils.RESPONSE_OKAY + "\r\n");
         stringBuilder.append(ResponseBuilderUtils.CONTENT_TYPE + contentType + "\r\n");
         stringBuilder.append(ResponseBuilderUtils.SERVER_HEADER + "\r\n");
-        stringBuilder.append(ResponseBuilderUtils.CONTENT_HEADER + "\r\n");
         stringBuilder.append(getFile(filename) + "\r\n");
 
         return stringBuilder.toString();
@@ -54,7 +53,7 @@ public class ResponseBuilder {
         return stringBuilder.toString();
     }
 
-    public String respondWithBadRequest(String contentType) {
+    public static String respondWithBadRequest(String contentType) {
         StringBuilder stringBuilder = new StringBuilder();
 
         stringBuilder.append(ResponseBuilderUtils.RESPONSE_BAD_REQUEST + "\r\n");
@@ -65,13 +64,35 @@ public class ResponseBuilder {
         return stringBuilder.toString();
     }
 
-    public String respondWithRequestHeaderFieldsTooLarge(String contentType) {
+    public static String respondWithRequestHeaderFieldsTooLarge(String contentType) {
         StringBuilder stringBuilder = new StringBuilder();
 
         stringBuilder.append(ResponseBuilderUtils.RESPONSE_REQUEST_HEADER_FIELDS_TOO_LARGE + "\r\n");
         stringBuilder.append(ResponseBuilderUtils.CONTENT_TYPE + contentType + "\r\n");
         stringBuilder.append(ResponseBuilderUtils.SERVER_HEADER + "\r\n");
         stringBuilder.append("Request Header fields too large" + "\r\n");
+
+        return stringBuilder.toString();
+    }
+
+    public static String respondWithMethodNowAllowed(String contentType) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        stringBuilder.append(ResponseBuilderUtils.RESPONSE_METHOD_NOT_ALLOWED + "\r\n");
+        stringBuilder.append(ResponseBuilderUtils.CONTENT_TYPE + contentType + "\r\n");
+        stringBuilder.append(ResponseBuilderUtils.SERVER_HEADER + "\r\n");
+        stringBuilder.append("This Server supports GET only." + "\r\n");
+
+        return stringBuilder.toString();
+    }
+
+    public static String respondWithRequestEntityLooLarge(String contentType) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        stringBuilder.append(ResponseBuilderUtils.REQUEST_ENTITY_TOO_LARGE + "\r\n");
+        stringBuilder.append(ResponseBuilderUtils.CONTENT_TYPE + contentType + "\r\n");
+        stringBuilder.append(ResponseBuilderUtils.SERVER_HEADER + "\r\n");
+        stringBuilder.append("File too large to download." + "\r\n");
 
         return stringBuilder.toString();
     }

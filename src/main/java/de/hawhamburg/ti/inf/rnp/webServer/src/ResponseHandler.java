@@ -14,6 +14,7 @@ import java.util.Optional;
 import static de.hawhamburg.ti.inf.rnp.webServer.src.utils.ResponseHandlerUtils.getMimeType;
 
 public class ResponseHandler implements Runnable {
+    private static final int maxFileSize = 23; // TODO
     private final Socket remote;
     private final ResponseBuilder responseBuilder;
     private final Validator validator;
@@ -35,20 +36,24 @@ public class ResponseHandler implements Runnable {
         try {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(remote.getInputStream()));
 
-            //TODO Als String speichern und in Validator in List convertieren
-            List<String> request = new ArrayList<>();
+            String requestAsString = "";
+            List<String> requestAsList = new ArrayList<>(); // TODO remove
             String requestLine = bufferedReader.readLine();
 
             while(!requestLine.isEmpty()) {
-                request.add(requestLine);
+                requestAsString += requestLine;
+                requestAsList.add(requestLine); // TODO remove
                 requestLine = bufferedReader.readLine();
             }
 
-            String filename = request.get(0).split(" ")[1];
+            // TODO use instead
+//            List<String> requestAsList = Arrays.stream(requestAsString.split("\r\n")).collect(Collectors.toList());
+
+            String filename = requestAsList.get(0).split(" ")[1];
             String mimeType = getMimeType(filename.substring(filename.lastIndexOf(".")));
 
             Optional<String> contentRange = Optional.empty();
-            for (String req: request) {
+            for (String req: requestAsList) {
                 if (req.contains("Content Range")){
                     contentRange = Optional.of(req);
                 }
@@ -56,7 +61,7 @@ public class ResponseHandler implements Runnable {
 
             // TODO REQUESTED_FILE_TOO_LARGE
 
-            switch (this.validator.validateRequest(request)) {
+            switch (this.validator.validateRequest(requestAsList)) {
                 case BAD_REQUEST -> {
                     this.sendResponse(this.responseBuilder.respondWithBadRequest(mimeType), contentRange);
                     this.synchronizedLogger.logResponse(ResponseBuilderUtils.RESPONSE_BAD_REQUEST, remote.getRemoteSocketAddress().toString(), filename, logFile);
@@ -68,6 +73,10 @@ public class ResponseHandler implements Runnable {
                 case NOT_FOUND -> {
                     this.sendResponse(this.responseBuilder.respondWithDirectoryListing(mimeType), contentRange);
                     this.synchronizedLogger.logResponse(ResponseBuilderUtils.RESPONSE_NOT_FOUND, remote.getRemoteSocketAddress().toString(), filename, logFile);
+                }
+                case METHOD_NOT_ALLOWED -> {
+                    this.sendResponse(this.responseBuilder.respondWithMethodNowAllowed(mimeType), contentRange);
+                    this.synchronizedLogger.logResponse(ResponseBuilderUtils.RESPONSE_METHOD_NOT_ALLOWED, remote.getRemoteSocketAddress().toString(), filename, logFile);
                 }
                 case OK -> {
                     this.sendResponse(this.responseBuilder.respondWithFileContent(filename, mimeType), contentRange);
