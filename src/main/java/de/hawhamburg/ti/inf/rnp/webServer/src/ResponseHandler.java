@@ -52,7 +52,7 @@ public class ResponseHandler implements Runnable {
             String fileEnding = "";
 
             try {
-                fileName.substring(fileName.lastIndexOf("."));
+                fileEnding = fileName.substring(fileName.lastIndexOf("."));
             } catch (Exception exception) {
                 System.err.println(exception.getMessage());
             }
