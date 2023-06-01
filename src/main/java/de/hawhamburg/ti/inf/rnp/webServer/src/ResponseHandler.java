@@ -38,11 +38,10 @@ public class ResponseHandler implements Runnable {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(remote.getInputStream()));
 
             String requestAsString = "";
-            String requestLine = bufferedReader.readLine();
+            String line;
 
-            while(!requestLine.isEmpty()) {
-                requestAsString += requestLine + "\r\n";
-                requestLine = bufferedReader.readLine();
+            while((line = bufferedReader.readLine()) != null && !line.isEmpty()) {
+                requestAsString += line + "\r\n";
             }
 
             List<String> requestAsList = Arrays.stream(requestAsString.split("\r\n")).collect(Collectors.toList());

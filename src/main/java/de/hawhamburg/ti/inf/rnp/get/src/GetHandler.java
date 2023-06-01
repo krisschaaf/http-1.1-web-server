@@ -4,7 +4,6 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class GetHandler {
@@ -32,20 +31,19 @@ public class GetHandler {
                 request.append("Content-Range: " + this.getClient.getContentRangeStart() + "-" + this.getClient.getContentRangeEnd() + "\r\n");
             }
 
-            request.append("Connection: close\r\n\r");
+            request.append("Connection: close\r\n\r\n");
 
             PrintWriter wtr = new PrintWriter(socket.getOutputStream());
 
             if(getClient.getSlowMoBytes() != -1 && getClient.getSlowMoTime() != -1) {
-                byte[] requestAsBytes = request.toString().getBytes();
+                char[] requestAsChars = request.toString().toCharArray();
 
-                for (int i = 0; i < requestAsBytes.length; i += getClient.getSlowMoBytes()) {
-                    int endIndex = Math.min(i + getClient.getSlowMoBytes(), requestAsBytes.length);
-                    byte[] slice = Arrays.copyOfRange(requestAsBytes, i, endIndex);
+                for (int i = 0; i < requestAsChars.length; i += getClient.getSlowMoBytes()) {
+                    int endIndex = Math.min(i + getClient.getSlowMoBytes(), requestAsChars.length);
 
-                    String sliceText = new String(slice, StandardCharsets.UTF_8);
+                    String slice = new String(requestAsChars, i, endIndex - i);
 
-                    wtr.println(sliceText);
+                    wtr.print(slice);
                     wtr.flush();
 
                     Thread.sleep(getClient.getSlowMoTime());
