@@ -9,4 +9,5 @@ public final class ResponseBuilderUtils {
     public static final String RESPONSE_REQUEST_HEADER_FIELDS_TOO_LARGE = "HTTP/1.1 431 REQUEST HEADER FIELDS TOO LARGE";
     public static final String RESPONSE_METHOD_NOT_ALLOWED = "HTTP/1.1 405 METHOD NOT ALLOWED";
     public static final String REQUEST_ENTITY_TOO_LARGE = "HTTP/1.1 413 REQUEST ENTITY TOO LARGE";
+    public static final String END_OF_HEADERS = "EOH" + "\r\n";
 }

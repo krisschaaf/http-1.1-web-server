@@ -117,8 +117,14 @@ public class ResponseHandler implements Runnable {
     }
 
     private String reduceResponseByContentRange(String response, Optional<String> contentRange) {
-        String responseHeaders = response.split(ResponseBuilderUtils.SERVER_HEADER)[0];
-        String responseContent = response.split(ResponseBuilderUtils.SERVER_HEADER)[1];
+        String[] responseCut = response.split(ResponseBuilderUtils.END_OF_HEADERS);
+        String responseHeaders = responseCut[0];
+
+        if(responseCut.length == 1) {
+            return responseHeaders;
+        }
+
+        String responseContent = response.split(ResponseBuilderUtils.END_OF_HEADERS)[1];
 
         byte[] responseContentInBytes = responseContent.getBytes();
 
@@ -143,8 +149,6 @@ public class ResponseHandler implements Runnable {
             }
         }
 
-        return responseHeaders +
-                ResponseBuilderUtils.SERVER_HEADER +
-                reducedResponseContent;
+        return responseHeaders + reducedResponseContent;
     }
 }

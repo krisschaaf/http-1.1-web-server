@@ -37,6 +37,7 @@ public class ResponseBuilder {
         stringBuilder.append(ResponseBuilderUtils.RESPONSE_OKAY + "\r\n");
         stringBuilder.append(ResponseBuilderUtils.CONTENT_TYPE + contentType + "\r\n");
         stringBuilder.append(ResponseBuilderUtils.SERVER_HEADER + "\r\n");
+        stringBuilder.append(ResponseBuilderUtils.END_OF_HEADERS);
         stringBuilder.append(getFile(filename) + "\r\n");
 
         return stringBuilder.toString();
@@ -49,6 +50,7 @@ public class ResponseBuilder {
         stringBuilder.append(ResponseBuilderUtils.CONTENT_TYPE + contentType + "\r\n");
         stringBuilder.append(ResponseBuilderUtils.SERVER_HEADER + "\r\n");
         stringBuilder.append(this.directoryListing.getDirectoryListingAsHTML() + "\r\n");
+        stringBuilder.append(ResponseBuilderUtils.END_OF_HEADERS);
 
         return stringBuilder.toString();
     }
@@ -60,6 +62,7 @@ public class ResponseBuilder {
         stringBuilder.append(ResponseBuilderUtils.CONTENT_TYPE + contentType + "\r\n");
         stringBuilder.append(ResponseBuilderUtils.SERVER_HEADER + "\r\n");
         stringBuilder.append("Invalid Request." + "\r\n");
+        stringBuilder.append(ResponseBuilderUtils.END_OF_HEADERS);
 
         return stringBuilder.toString();
     }
@@ -71,6 +74,7 @@ public class ResponseBuilder {
         stringBuilder.append(ResponseBuilderUtils.CONTENT_TYPE + contentType + "\r\n");
         stringBuilder.append(ResponseBuilderUtils.SERVER_HEADER + "\r\n");
         stringBuilder.append("Request Header fields too large" + "\r\n");
+        stringBuilder.append(ResponseBuilderUtils.END_OF_HEADERS);
 
         return stringBuilder.toString();
     }
@@ -82,6 +86,7 @@ public class ResponseBuilder {
         stringBuilder.append(ResponseBuilderUtils.CONTENT_TYPE + contentType + "\r\n");
         stringBuilder.append(ResponseBuilderUtils.SERVER_HEADER + "\r\n");
         stringBuilder.append("This Server supports GET only." + "\r\n");
+        stringBuilder.append(ResponseBuilderUtils.END_OF_HEADERS);
 
         return stringBuilder.toString();
     }
@@ -93,6 +98,7 @@ public class ResponseBuilder {
         stringBuilder.append(ResponseBuilderUtils.CONTENT_TYPE + contentType + "\r\n");
         stringBuilder.append(ResponseBuilderUtils.SERVER_HEADER + "\r\n");
         stringBuilder.append("File too large to download." + "\r\n");
+        stringBuilder.append(ResponseBuilderUtils.END_OF_HEADERS);
 
         return stringBuilder.toString();
     }
