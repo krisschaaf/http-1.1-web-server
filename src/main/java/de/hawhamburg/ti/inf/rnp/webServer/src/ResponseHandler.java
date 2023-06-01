@@ -118,13 +118,13 @@ public class ResponseHandler implements Runnable {
 
     private String reduceResponseByContentRange(String response, Optional<String> contentRange) {
         String[] responseCut = response.split(ResponseBuilderUtils.END_OF_HEADERS);
-        String responseHeaders = responseCut[0];
 
         if(responseCut.length == 1) {
-            return responseHeaders;
+            return response;
         }
 
-        String responseContent = response.split(ResponseBuilderUtils.END_OF_HEADERS)[1];
+        String responseHeaders = responseCut[0];
+        String responseContent = responseCut[1];
 
         byte[] responseContentInBytes = responseContent.getBytes();
 
