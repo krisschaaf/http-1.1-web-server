@@ -1,7 +1,8 @@
-# HTTP/1.1 Web-Server
+# UNIX HTTP/1.1 Web-Server
 ## Computer Networking Exercise 3
   
 A basic RFC based webserver implemented in java.  
+Tested only on UNIX machines.
 
 This application uses a WebServer and a GetClient. They both must be started separately.  
 The WebServer uses concurrency and can handle multiple requests at a time.  
