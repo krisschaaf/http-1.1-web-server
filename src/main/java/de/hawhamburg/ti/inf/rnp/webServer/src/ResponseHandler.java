@@ -135,7 +135,8 @@ public class ResponseHandler implements Runnable {
                 int contentRangeStart = Integer.parseInt(contentRangeValues.split("-")[0]);
                 int contentRangeEnd = Integer.parseInt(contentRangeValues.split("-")[1]);
 
-                reducedResponseContent = new String(Arrays.copyOfRange(responseContentInBytes, contentRangeStart, contentRangeEnd), StandardCharsets.UTF_8);
+                reducedResponseContent = new String(Arrays.copyOfRange(responseContentInBytes, contentRangeStart,
+                        Math.min(contentRangeEnd + 1, responseContent.length())), StandardCharsets.UTF_8);
             } else {
                 int contentRangeStart = Integer.parseInt(contentRangeValues);
 
